@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-bg: #ebebeb;
+  --color-ink: #1a1a1a;
+  --color-yellow: #ffcc00;
+  --color-blue: #0076dd;
+  --color-muted: #545454;
+  --color-line: #cacaca;
+  --color-canvas: #d4d4d4;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Vremena Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Vremena Grotesk (self-hosted from /public) — display font for titles. */
+@font-face {
+  font-family: "Vremena Grotesk";
+  src: url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_regular_macroman/vremenagrotesk-webfont.woff2") format("woff2"),
+    url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_regular_macroman/vremenagrotesk-webfont.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vremena Grotesk";
+  src: url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_medium_macroman/vremenagroteskmedium-webfont.woff2") format("woff2"),
+    url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_medium_macroman/vremenagroteskmedium-webfont.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vremena Grotesk";
+  src: url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff2") format("woff2"),
+    url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Center the mobile app frame on a neutral canvas on larger screens. */
+html {
+  background: var(--color-canvas);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0 auto;
+  max-width: 480px;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.08);
+}
+
+/* Hide scrollbars on horizontal chip rows. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

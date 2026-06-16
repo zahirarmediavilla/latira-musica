@@ -1,0 +1,99 @@
+"use client";
+
+import { PrimaryButton } from "./Button";
+
+export interface DetailActionData {
+  name: string;
+  date: string; // YYYY-MM-DD
+  hour: string; // "HH:MM" or ""
+  place: string;
+  description: string;
+  ticketUrl: string;
+}
+
+function buildIcs(ev: DetailActionData): string {
+  const d = ev.date.replace(/-/g, "");
+  const dtStart = ev.hour ? `${d}T${ev.hour.replace(":", "")}00` : d;
+  const startLine = ev.hour
+    ? `DTSTART:${dtStart}`
+    : `DTSTART;VALUE=DATE:${dtStart}`;
+  const esc = (s: string) => s.replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//LaTira//ES",
+    "BEGIN:VEVENT",
+    `UID:${dtStart}-${Math.random().toString(36).slice(2)}@latira`,
+    startLine,
+    `SUMMARY:${esc(ev.name)}`,
+    ev.place ? `LOCATION:${esc(ev.place)}` : "",
+    ev.description ? `DESCRIPTION:${esc(ev.description.slice(0, 300))}` : "",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ]
+    .filter(Boolean)
+    .join("\r\n");
+}
+
+export function DetailActions({ data }: { data: DetailActionData }) {
+  function addToCalendar() {
+    const blob = new Blob([buildIcs(data)], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data.name.slice(0, 40)}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function share() {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: data.name, text: data.name, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert("Enlace copiado");
+      }
+    } catch {
+      /* user cancelled */
+    }
+  }
+
+  const hasTicket = Boolean(data.ticketUrl);
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-8 pt-3">
+      <div
+        className={
+          "mb-2 flex " + (hasTicket ? "justify-between" : "justify-center")
+        }
+      >
+        <button
+          type="button"
+          onClick={addToCalendar}
+          className="px-2 py-5 text-[15px] font-medium uppercase tracking-[0.06em] text-muted"
+        >
+          Añadir a calendario
+        </button>
+        {hasTicket && (
+          <button
+            type="button"
+            onClick={share}
+            className="px-2 py-5 text-[15px] font-medium uppercase tracking-[0.06em] text-muted"
+          >
+            Compartir
+          </button>
+        )}
+      </div>
+
+      {hasTicket ? (
+        <PrimaryButton href={data.ticketUrl} external>
+          Comprar entradas
+        </PrimaryButton>
+      ) : (
+        <PrimaryButton onClick={share}>Compartir</PrimaryButton>
+      )}
+    </div>
+  );
+}
