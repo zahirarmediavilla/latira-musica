@@ -26,7 +26,7 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 bg-ink text-white">
-      <div className="flex items-center justify-between px-5 pt-8">
+      <div className="flex items-center justify-between px-5 pt-5">
         <h1 className="leading-none">
           <Image
             src="/LaTira-logo.svg"
@@ -34,14 +34,14 @@ export function Header({
             width={137}
             height={59}
             priority
-            className="h-20 w-auto"
+            className="h-[3.33rem] w-auto"
           />
         </h1>
         <button
           type="button"
           onClick={onMenu}
           aria-label="Menú"
-          className="rounded-full p-2 hover:bg-white/10"
+          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
         >
           <MenuIcon />
         </button>
@@ -67,7 +67,7 @@ export function Header({
             type="button"
             onClick={onClearSearch}
             aria-label="Cerrar búsqueda"
-            className="rounded-full p-1.5 hover:bg-white/10"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
           >
             <CloseIcon />
           </button>
@@ -76,11 +76,11 @@ export function Header({
             type="button"
             onClick={onFilter}
             aria-label="Filtrar"
-            className="relative rounded-full p-1.5 hover:bg-white/10"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
           >
             <SlidersIcon />
             {filterCount > 0 && (
-              <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full bg-yellow ring-2 ring-ink" />
+              <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-yellow ring-2 ring-ink" />
             )}
           </button>
         )}

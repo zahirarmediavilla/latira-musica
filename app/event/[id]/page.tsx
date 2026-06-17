@@ -46,7 +46,7 @@ export default async function EventPage({
     <div className="min-h-dvh pb-44">
       <BackHeader />
 
-      <article className="px-5">
+      <article className="px-5 pt-2">
         {ev.genres.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {ev.genres.map((g) => (
@@ -65,22 +65,22 @@ export default async function EventPage({
         </h1>
 
         {ev.artists && (
-          <p className="mt-3 font-bold leading-snug text-ink">{ev.artists}</p>
+          <p className="mt-3 text-[18px] font-bold leading-snug text-ink">{ev.artists}</p>
         )}
 
-        <p className="mt-4 text-[15px] font-bold capitalize text-muted">
+        <p className="mt-4 text-[16px] font-bold capitalize text-muted">
           {formatMediumDate(ev.date)}
           {ev.hour && <span> · {ev.hour}</span>}
         </p>
 
         {(ev.venue?.name || ev.location) && (
-          <p className="mt-3 text-[15px]">
+          <p className="mt-1 text-[16px]">
             {ev.venue?.mapsUrl ? (
               <a
                 href={ev.venue.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-muted underline"
+                className="font-medium text-muted underline"
               >
                 {ev.venue?.name || ev.location}
               </a>

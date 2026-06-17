@@ -3,7 +3,7 @@
 import { ArrowRightIcon } from "./icons";
 
 const PRIMARY =
-  "flex w-full items-center justify-center gap-2 rounded-full bg-blue py-4 text-[15px] font-medium uppercase tracking-[0.06em] text-white";
+  "flex w-full items-center justify-center gap-2 rounded-full bg-blue py-4 text-[15px] font-medium uppercase tracking-[0.06em] text-white transition-colors hover:bg-[#0061b8]";
 
 interface ButtonProps {
   children: React.ReactNode;

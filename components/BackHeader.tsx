@@ -9,13 +9,13 @@ import { BackIcon } from "./icons";
 export function BackHeader() {
   const router = useRouter();
   return (
-    <div className="sticky top-0 z-30 flex items-center justify-between bg-bg px-5 pt-8">
-      <div className="h-20 w-0" aria-hidden />
+    <div className="sticky top-0 z-30 flex items-center justify-between bg-bg px-5 pt-5">
+      <div className="h-[3.33rem] w-0" aria-hidden />
       <button
         type="button"
         onClick={() => router.back()}
         aria-label="Volver"
-        className="rounded-full p-2 text-ink hover:bg-ink/5"
+        className="flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5"
       >
         <BackIcon />
       </button>

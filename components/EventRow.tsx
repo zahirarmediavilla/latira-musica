@@ -18,7 +18,7 @@ export function EventRow({
     <Link
       href={`/event/${event.id}`}
       className={
-        "block pb-6 " +
+        "block pb-6 pr-5 " +
         (first ? "pt-5" : "pt-6") +
         (last ? "" : " border-b border-line")
       }
@@ -28,7 +28,7 @@ export function EventRow({
       </h3>
 
       {event.artists && (
-        <p className="mt-2 line-clamp-2 font-bold leading-snug text-ink">
+        <p className="mt-0.5 line-clamp-2 font-bold leading-snug text-ink">
           {event.artists}
         </p>
       )}
@@ -42,7 +42,7 @@ export function EventRow({
       </p>
 
       {(event.hour || priceLabel) && (
-        <p className="mt-1 text-[15px]">
+        <p className="mt-0.5 text-[15px]">
           {event.hour && <span className="font-bold text-muted">{event.hour}</span>}
           {event.hour && priceLabel && <span className="text-muted"> · </span>}
           {priceLabel && <span className="text-muted">{priceLabel}</span>}
