@@ -63,7 +63,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
   const hasTicket = Boolean(data.ticketUrl);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-8 pt-3">
+    <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-6 pt-6">
       <div
         className={
           "mb-2 flex " + (hasTicket ? "justify-between" : "justify-center")
@@ -72,7 +72,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
         <button
           type="button"
           onClick={addToCalendar}
-          className="px-2 py-5 text-[15px] font-medium uppercase tracking-[0.06em] text-muted"
+          className="flex items-center justify-center rounded-full py-4 text-[15px] font-medium uppercase tracking-[0.06em] text-muted transition-colors hover:text-blue"
         >
           Añadir a calendario
         </button>
@@ -80,7 +80,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
           <button
             type="button"
             onClick={share}
-            className="px-2 py-5 text-[15px] font-medium uppercase tracking-[0.06em] text-muted"
+            className="flex items-center justify-center rounded-full py-4 text-[15px] font-medium uppercase tracking-[0.06em] text-muted transition-colors hover:text-blue"
           >
             Compartir
           </button>

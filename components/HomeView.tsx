@@ -119,21 +119,21 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           {/* Header: same height as the home header, with the logo + close icon
               placed like the home header's logo + menu icon (no search / filters). */}
           <div className="min-h-[200px] shrink-0">
-            <div className="flex items-center justify-between px-5 pt-8">
+            <div className="flex items-center justify-between px-5 pt-5">
               <h1 className="leading-none">
                 <Image
                   src="/LaTira-logo.svg"
                   alt="LaTira"
                   width={137}
                   height={59}
-                  className="h-20 w-auto"
+                  className="h-[3.33rem] w-auto"
                 />
               </h1>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
                 aria-label="Cerrar"
-                className="rounded-full p-2 hover:bg-white/10"
+                className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
               >
                 <CloseIcon />
               </button>

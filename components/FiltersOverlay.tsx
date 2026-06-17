@@ -11,7 +11,7 @@ import { formatFilterDate, formatShortDate } from "@/lib/format";
 import { Chip } from "./Chip";
 import { Calendar } from "./Calendar";
 import { PrimaryButton } from "./Button";
-import { CheckIcon, BackIcon } from "./icons";
+import { CheckIcon, CloseIcon } from "./icons";
 
 const CHIPS: { id: DateChip; label: string }[] = [
   { id: "finde", label: "El finde" },
@@ -64,10 +64,10 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Volver"
-          className="rounded-full p-1 text-ink hover:bg-ink/5"
+          aria-label="Cerrar"
+          className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5"
         >
-          <BackIcon />
+          <CloseIcon />
         </button>
       </header>
 
@@ -79,7 +79,10 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
         <button
           type="button"
           onClick={() => setCalOpen((o) => !o)}
-          className="mt-2 w-full border-b border-line/80 pb-2 text-left text-lg text-ink"
+          className={
+            "mt-2 w-full border-b border-line/80 pb-2 text-left text-lg font-medium " +
+            (draft.from ? "text-ink" : "text-muted")
+          }
         >
           {dateValue}
         </button>
@@ -93,7 +96,12 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
               onClick={() => setCalOpen(false)}
             />
             <div className="relative z-20 mt-3">
-              <Calendar from={draft.from} to={draft.to} onSelect={selectRange} />
+              <Calendar
+                from={draft.from}
+                to={draft.to}
+                onSelect={selectRange}
+                onConfirm={() => setCalOpen(false)}
+              />
             </div>
           </>
         )}
@@ -109,7 +117,7 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
         </div>
 
         {/* Zones */}
-        <p className="mt-9 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+        <p className="mt-14 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
           Sitios
         </p>
         <ul className="mt-1">
@@ -125,16 +133,16 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
                 >
                   <span
                     className={
-                      "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded border " +
+                      "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border " +
                       (checked ? "border-yellow bg-yellow text-ink" : "border-ink/40")
                     }
                   >
                     {checked && <CheckIcon className="h-4 w-4" />}
                   </span>
                   <span>
-                    <span className="block text-lg text-ink">{meta.label}</span>
+                    <span className="block text-lg font-medium text-ink">{meta.label}</span>
                     {meta.sub && (
-                      <span className="block text-sm text-muted">{meta.sub}</span>
+                      <span className="block text-base font-normal text-muted">{meta.sub}</span>
                     )}
                   </span>
                 </button>
@@ -144,7 +152,7 @@ export function FiltersOverlay({ initial, onApply, onClose }: Props) {
         </ul>
       </div>
 
-      <div className="border-t border-[#b8b8b8] px-5 pb-6 pt-4">
+      <div className="border-t border-[#b8b8b8] px-5 pb-6 pt-6">
         <PrimaryButton onClick={() => onApply(draft)}>Aplicar filtros</PrimaryButton>
       </div>
     </div>

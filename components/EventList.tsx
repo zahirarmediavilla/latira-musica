@@ -5,8 +5,8 @@ import { EventRow } from "./EventRow";
 // Home list spacing mirrors the Figma frame:
 //  - date gutter: 72px wide, 20px gap -> event content starts at x=92
 //  - the date block (yellow stripe sized to the day/month text + the day / month)
-//    sticks to the top-left under the 148px header while its day's events scroll,
-//    until the next day pushes it away.
+//    sticks to the top-left flush under the ~161px header (blue line) while its
+//    day's events scroll, until the next day pushes it away.
 export function EventList({ groups }: { groups: DayGroup[] }) {
   return (
     <div className="pb-20">
@@ -17,19 +17,19 @@ export function EventList({ groups }: { groups: DayGroup[] }) {
           style={{ borderBottom: "1.5px solid #b8b8b8" }}
         >
           <div className="w-[72px] shrink-0">
-            <div className="sticky top-[200px] flex gap-3.5">
+            <div className="sticky top-[161px] flex gap-3.5">
               <div className="w-1.5 self-stretch bg-yellow" />
-              <div className="flex flex-col items-center justify-center py-5 leading-none">
+              <div className="flex flex-col justify-center py-5 text-center leading-none">
                 <div className="font-display text-[26px] font-bold text-ink">
                   {dayNumber(group.date)}
                 </div>
-                <div className="mt-1.5 text-xs font-semibold tracking-wide text-muted">
+                <div className="mt-0.5 text-xs font-semibold tracking-wide text-muted">
                   {monthAbbr(group.date)}
                 </div>
               </div>
             </div>
           </div>
-          <div className="min-w-0 flex-1 pl-5 pr-5">
+          <div className="min-w-0 flex-1 pl-5">
             {group.events.map((ev, idx) => (
               <EventRow
                 key={ev.id}
