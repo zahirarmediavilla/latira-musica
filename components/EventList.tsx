@@ -7,7 +7,13 @@ import { EventRow } from "./EventRow";
 //  - the date block (yellow stripe sized to the day/month text + the day / month)
 //    sticks to the top-left flush under the ~161px header (blue line) while its
 //    day's events scroll, until the next day pushes it away.
-export function EventList({ groups }: { groups: DayGroup[] }) {
+export function EventList({
+  groups,
+  dateTop = 161,
+}: {
+  groups: DayGroup[];
+  dateTop?: number;
+}) {
   return (
     <div className="pb-20">
       {groups.map((group) => (
@@ -17,7 +23,7 @@ export function EventList({ groups }: { groups: DayGroup[] }) {
           style={{ borderBottom: "1.5px solid #b8b8b8" }}
         >
           <div className="w-[72px] shrink-0">
-            <div className="sticky top-[161px] flex gap-3.5">
+            <div className="sticky flex gap-3.5" style={{ top: dateTop }}>
               <div className="w-1.5 self-stretch bg-yellow" />
               <div className="flex flex-col justify-center py-5 text-center leading-none">
                 <div className="font-display text-[26px] font-bold text-ink">

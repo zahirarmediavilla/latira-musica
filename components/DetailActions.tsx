@@ -1,6 +1,18 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { PrimaryButton } from "./Button";
+
+// Nearest scrollable ancestor (the overlay's scroll container); null = window.
+function scrollParent(el: HTMLElement | null): HTMLElement | null {
+  let node = el?.parentElement ?? null;
+  while (node) {
+    const oy = getComputedStyle(node).overflowY;
+    if (oy === "auto" || oy === "scroll") return node;
+    node = node.parentElement;
+  }
+  return null;
+}
 
 export interface DetailActionData {
   name: string;
@@ -62,8 +74,33 @@ export function DetailActions({ data }: { data: DetailActionData }) {
 
   const hasTicket = Boolean(data.ticketUrl);
 
+  // Hide the bar when scrolling down the content, reveal it when scrolling up.
+  const barRef = useRef<HTMLDivElement>(null);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const scroller = scrollParent(barRef.current);
+    const target: HTMLElement | Window = scroller ?? window;
+    const top = () => (scroller ? scroller.scrollTop : window.scrollY);
+    let last = top();
+    function onScroll() {
+      const cur = top();
+      if (cur > last && cur > 60) setHidden(true);
+      else if (cur < last) setHidden(false);
+      last = cur;
+    }
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-6 pt-6">
+    <div
+      ref={barRef}
+      className={
+        "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-6 pt-6 transition-transform duration-300 ease-out " +
+        (hidden ? "translate-y-full" : "translate-y-0")
+      }
+    >
       <div
         className={
           "mb-2 flex " + (hasTicket ? "justify-between" : "justify-center")
