@@ -117,6 +117,8 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           onApply={(f) => {
             setFilters(f);
             setFilterOpen(false);
+            // Show the freshly filtered list from the top, not at the old scroll.
+            window.scrollTo(0, 0);
           }}
           onClose={() => setFilterOpen(false)}
         />

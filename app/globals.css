@@ -11,6 +11,11 @@
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: "Vremena Grotesk", ui-sans-serif, system-ui, sans-serif;
+
+  /* Detail overlay slide animations (registered here so Tailwind v4 keeps the
+     keyframes and generates the animate-detail-in / animate-detail-out utilities). */
+  --animate-detail-in: slide-in-right 0.32s ease-out;
+  --animate-detail-out: slide-out-right 0.28s ease-in forwards;
 }
 
 /* Vremena Grotesk (self-hosted from /public) — display font for titles. */
@@ -59,7 +64,8 @@ body {
   scrollbar-width: none;
 }
 
-/* Detail page enters by sliding in from the right. */
+/* Keyframes for the detail overlay (utilities come from the --animate-* theme
+   vars above: animate-detail-in / animate-detail-out). */
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);
@@ -74,17 +80,5 @@ body {
   }
   to {
     transform: translateX(100%);
-  }
-}
-.detail-enter {
-  animation: slide-in-right 0.32s ease-out;
-}
-.detail-exit {
-  animation: slide-out-right 0.28s ease-in forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  .detail-enter,
-  .detail-exit {
-    animation: none;
   }
 }
