@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LaEvent } from "@/lib/types";
 import {
   type Filters,
@@ -10,7 +10,6 @@ import {
   filtersActive,
   groupByDay,
 } from "@/lib/filtering";
-import Image from "next/image";
 import { dayNumber, monthAbbr } from "@/lib/format";
 import { Header } from "./Header";
 import { EventList } from "./EventList";
@@ -34,11 +33,20 @@ function dateFilterLabel(f: Filters): string | null {
   return null;
 }
 
+// Filters persist while navigating to a detail and back (within the session).
+// Held at module scope so a remount of HomeView restores them synchronously
+// — only mutated client-side, so it never affects SSR/hydration.
+let persistedFilters: Filters = emptyFilters;
+
 export function HomeView({ events }: { events: LaEvent[] }) {
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [filters, setFilters] = useState<Filters>(persistedFilters);
   const [filterOpen, setFilterOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    persistedFilters = filters;
+  }, [filters]);
 
   const searching = query.trim().length > 0;
   const filtered = useMemo(
@@ -61,7 +69,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       />
 
       {filtersActive(filters) && (
-        <div className="no-scrollbar flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-1.5">
+        <div className="no-scrollbar sticky top-[161px] z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-1.5">
           {dateLabel && (
             <RemovableTag
               label={dateLabel}
@@ -100,7 +108,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           )}
         </div>
       ) : (
-        <EventList groups={groups} />
+        <EventList groups={groups} dateTop={filtersActive(filters) ? 215 : 161} />
       )}
 
       {filterOpen && (
@@ -115,38 +123,28 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       )}
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 mx-auto flex max-w-[480px] flex-col bg-ink text-white">
-          {/* Header: same height as the home header, with the logo + close icon
-              placed like the home header's logo + menu icon (no search / filters). */}
-          <div className="min-h-[200px] shrink-0">
-            <div className="flex items-center justify-between px-5 pt-5">
-              <h1 className="leading-none">
-                <Image
-                  src="/LaTira-logo.svg"
-                  alt="LaTira"
-                  width={137}
-                  height={59}
-                  className="h-[3.33rem] w-auto"
-                />
-              </h1>
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                aria-label="Cerrar"
-                className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
-              >
-                <CloseIcon />
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 mx-auto flex max-w-[480px] flex-col bg-bg text-ink">
+          <div className="flex justify-end px-5 pt-5">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Cerrar"
+              className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-ink/5"
+            >
+              <CloseIcon />
+            </button>
           </div>
-          <div className="space-y-5 px-5 text-lg leading-relaxed text-white/80">
+          <div className="space-y-6 px-5 pt-8 text-lg leading-relaxed text-ink">
             <p>
-              LaTira es la agenda de música en directo de Asturias: todos los
-              conciertos en un único sitio, sin filtros de género ni zona.
+              LaTira quiere ser un lugar donde se puedan ver todos los eventos
+              musicales de Asturias, de cualquier género musical.
             </p>
             <p>
-              Reúne eventos de salas, ayuntamientos, festivales y promotoras de
-              toda Asturias.
+              Si quieres saber más sobre el proyecto, comentarnos cualquier cosa,
+              o incluir eventos en la lista, puedes escribir a{" "}
+              <a href="mailto:hola@latira.org" className="font-medium underline">
+                hola@latira.org
+              </a>
             </p>
           </div>
         </div>

@@ -58,3 +58,33 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Detail page enters by sliding in from the right. */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.detail-enter {
+  animation: slide-in-right 0.32s ease-out;
+}
+.detail-exit {
+  animation: slide-out-right 0.28s ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-enter,
+  .detail-exit {
+    animation: none;
+  }
+}
