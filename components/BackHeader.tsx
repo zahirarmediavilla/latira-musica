@@ -11,14 +11,15 @@ export function BackHeader() {
 
   // Play the reverse slide-out, then navigate back once it finishes.
   function handleClose() {
-    const container = document.querySelector<HTMLElement>(".detail-enter");
+    const container = document.querySelector<HTMLElement>(".detail-overlay");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!container || reduce) {
       router.back();
       return;
     }
-    if (container.classList.contains("detail-exit")) return; // already closing
-    container.classList.add("detail-exit");
+    if (container.classList.contains("animate-detail-out")) return; // already closing
+    container.classList.remove("animate-detail-in");
+    container.classList.add("animate-detail-out");
     window.setTimeout(() => router.back(), 280);
   }
 

@@ -17,7 +17,7 @@ export default async function EventModal({
     // Fixed wrapper clips the off-screen start of the slide so it never adds a
     // scrollbar; the inner card carries the animation and slides over home.
     <div className="fixed inset-0 z-50 overflow-hidden">
-      <div className="detail-enter mx-auto flex h-full max-w-[480px] flex-col overflow-y-auto bg-bg pb-44 shadow-[-10px_0_30px_rgba(0,0,0,0.18)]">
+      <div className="detail-overlay mx-auto flex h-full max-w-[480px] flex-col overflow-y-auto bg-bg pb-44 shadow-[-10px_0_30px_rgba(0,0,0,0.18)] animate-detail-in motion-reduce:animate-none">
         <EventDetail event={ev} />
       </div>
     </div>
