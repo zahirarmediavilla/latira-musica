@@ -50,13 +50,13 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           <p className="mt-3 text-[18px] font-bold leading-snug text-ink">{ev.artists}</p>
         )}
 
-        <p className="mt-4 text-[16px] font-bold capitalize text-muted">
+        <p className="mt-4 mb-3 text-[18px] font-bold capitalize text-muted">
           {formatMediumDate(ev.date)}
           {ev.hour && <span> · {ev.hour}</span>}
         </p>
 
         {(ev.venue?.name || ev.location) && (
-          <p className="mt-1 text-[16px]">
+          <p className="mt-1 text-[18px]">
             {ev.venue?.mapsUrl ? (
               <a
                 href={ev.venue.mapsUrl}
