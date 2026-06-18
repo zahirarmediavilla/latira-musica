@@ -1,5 +1,5 @@
-// Spanish date/time formatting. Airtable stores the intended wall-clock time
-// as UTC (e.g. "2026-08-08T19:00:00.000Z" means 19:00), so we read the UTC
+// Spanish date/time formatting. start_at is stored with the intended wall-clock
+// time as UTC (e.g. "2026-08-08T19:00:00+00:00" means 19:00), so we read the UTC
 // parts to avoid a timezone shift.
 
 const MESES = [
@@ -19,7 +19,7 @@ function parseDate(date: string): Date {
   return new Date(`${date}T12:00:00.000Z`);
 }
 
-/** "HH:MM" from an Airtable dateTime ISO string, read in UTC. "" if missing. */
+/** "HH:MM" from a dateTime ISO string, read in UTC. "" if missing. */
 export function formatHour(iso: string | undefined | null): string {
   if (!iso) return "";
   const d = new Date(iso);

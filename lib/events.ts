@@ -1,5 +1,5 @@
 import "server-only";
-import { fetchRecords, AirtableRecord, F, TBL_EVENTS, TBL_VENUES } from "./airtable";
+import { supabase } from "./supabase";
 import type { LaEvent, Venue } from "./types";
 import { formatHour } from "./format";
 
@@ -22,44 +22,72 @@ function fixCaps(s: string): string {
     .replace(/(^|[^\p{L}])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase());
 }
 
-async function getVenueMap(): Promise<Map<string, Venue>> {
-  const records = await fetchRecords(TBL_VENUES, { pageSize: "100" });
-  const map = new Map<string, Venue>();
-  for (const r of records) {
-    map.set(r.id, {
-      id: r.id,
-      name: fixCaps(str(r.fields[F.vName])),
-      address: str(r.fields[F.vAddress]),
-      mapsUrl: str(r.fields[F.vMaps]),
-      municipio: str(r.fields[F.vMunicipio]),
-      localidad: str(r.fields[F.vLocalidad]),
-    });
-  }
-  return map;
+// Columns to select, including the joined venue (recintos) via venue_id.
+// NB: the live `eventos` table has no `free` column — it is derived from price.
+const SELECT =
+  "id, name, date, start_at, artists, genres, price, ticket_url, " +
+  "event_url, location, description, sample_url, " +
+  "recintos ( id, nombre, direccion, maps_url, municipio, localidad )";
+
+interface VenueRow {
+  id: number;
+  nombre: string | null;
+  direccion: string | null;
+  maps_url: string | null;
+  municipio: string | null;
+  localidad: string | null;
 }
 
-function toEvent(r: AirtableRecord, venues: Map<string, Venue>): LaEvent {
-  const venueIds = arr(r.fields[F.venue]);
-  const venue = venueIds.length ? venues.get(venueIds[0]) ?? null : null;
-  const price = str(r.fields[F.price]);
-  const name = fixCaps(str(r.fields[F.name]));
-  const artists = fixCaps(str(r.fields[F.artists]));
+interface EventRow {
+  id: number;
+  name: string | null;
+  date: string | null;
+  start_at: string | null;
+  artists: string | null;
+  genres: string[] | null;
+  price: string | null;
+  ticket_url: string | null;
+  event_url: string | null;
+  location: string | null;
+  description: string | null;
+  sample_url: string | null;
+  // Supabase returns a to-one embedded relation as an object (or null).
+  recintos: VenueRow | VenueRow[] | null;
+}
+
+function toVenue(r: VenueRow | VenueRow[] | null): Venue | null {
+  const v = Array.isArray(r) ? r[0] : r;
+  if (!v) return null;
   return {
-    id: r.id,
+    id: String(v.id),
+    name: fixCaps(str(v.nombre)),
+    address: str(v.direccion),
+    mapsUrl: str(v.maps_url),
+    municipio: str(v.municipio),
+    localidad: str(v.localidad),
+  };
+}
+
+function toEvent(r: EventRow): LaEvent {
+  const price = str(r.price);
+  const name = fixCaps(str(r.name));
+  const artists = fixCaps(str(r.artists));
+  return {
+    id: String(r.id),
     name,
-    date: str(r.fields[F.date]),
-    hour: formatHour(str(r.fields[F.hour])),
+    date: str(r.date),
+    hour: formatHour(r.start_at),
     // Hide the artists line when it just duplicates the event name.
     artists: artists.trim().toLowerCase() === name.trim().toLowerCase() ? "" : artists,
-    genres: arr(r.fields[F.genres]),
+    genres: arr(r.genres),
     price,
     free: isFree(price),
-    ticketUrl: str(r.fields[F.ticketUrl]),
-    eventUrl: str(r.fields[F.eventUrl]),
-    location: str(r.fields[F.location]),
-    venue,
-    description: str(r.fields[F.description]),
-    sampleUrl: str(r.fields[F.sample]),
+    ticketUrl: str(r.ticket_url),
+    eventUrl: str(r.event_url),
+    location: str(r.location),
+    venue: toVenue(r.recintos),
+    description: str(r.description),
+    sampleUrl: str(r.sample_url),
   };
 }
 
@@ -68,27 +96,41 @@ function byDateThenHour(a: LaEvent, b: LaEvent): number {
   return (a.hour || "99:99").localeCompare(b.hour || "99:99");
 }
 
-/** Up to 100 upcoming events, sorted by date ascending (server-side), joined
- *  with venue data. The local sort additionally orders by hour within a day. */
+// Today's date (YYYY-MM-DD) in Europe/Madrid, to filter out past events.
+function today(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(
+    new Date(),
+  );
+}
+
+/** All upcoming events (date today or later), sorted by date then hour,
+ *  joined with venue data. */
 export async function getEvents(): Promise<LaEvent[]> {
-  const [records, venues] = await Promise.all([
-    fetchRecords(TBL_EVENTS, {
-      maxRecords: "100",
-      pageSize: "100",
-      "sort[0][field]": "Date",
-      "sort[0][direction]": "asc",
-      // Date is today or later (after yesterday).
-      filterByFormula: "IS_AFTER({Date}, DATEADD(TODAY(), -1, 'days'))",
-    }),
-    getVenueMap(),
-  ]);
-  return records
-    .map((r) => toEvent(r, venues))
+  const { data, error } = await supabase()
+    .from("eventos")
+    .select(SELECT)
+    .gte("date", today())
+    .order("date", { ascending: true })
+    .limit(1000);
+
+  if (error) throw new Error(`Supabase: ${error.message}`);
+
+  return (data as unknown as EventRow[])
+    .map(toEvent)
     .filter((e) => e.date) // need a date to place it in the list
     .sort(byDateThenHour);
 }
 
 export async function getEventById(id: string): Promise<LaEvent | null> {
-  const events = await getEvents();
-  return events.find((e) => e.id === id) ?? null;
+  const numId = Number(id);
+  if (!Number.isInteger(numId)) return null;
+
+  const { data, error } = await supabase()
+    .from("eventos")
+    .select(SELECT)
+    .eq("id", numId)
+    .maybeSingle();
+
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  return data ? toEvent(data as unknown as EventRow) : null;
 }

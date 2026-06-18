@@ -1,4 +1,4 @@
-// Normalized domain types for LaTira. The Airtable field IDs live in lib/airtable.ts.
+// Normalized domain types for LaTira. Data is read from Supabase in lib/events.ts.
 
 export interface Venue {
   id: string;
