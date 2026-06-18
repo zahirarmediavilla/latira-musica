@@ -28,7 +28,7 @@ export function EventRow({
       </h3>
 
       {event.artists && (
-        <p className="mt-0.5 line-clamp-2 font-bold leading-snug text-ink">
+        <p className="mt-0.5 line-clamp-2 text-[20px] font-bold leading-snug text-ink">
           {event.artists}
         </p>
       )}
