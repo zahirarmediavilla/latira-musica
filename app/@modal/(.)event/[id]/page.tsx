@@ -15,10 +15,15 @@ export default async function EventModal({
 
   return (
     // Fixed wrapper clips the off-screen start of the slide so it never adds a
-    // scrollbar; the inner card carries the animation and slides over home.
+    // scrollbar. The middle card carries the slide animation; a *separate* inner
+    // element owns the scroll, so the scrollable layer is never the one being
+    // transformed (iOS WebKit otherwise rebuilds it after the slide, which makes
+    // scrolling unresponsive for a beat).
     <div className="fixed inset-0 z-50 overflow-hidden">
-      <div className="detail-overlay mx-auto flex h-full max-w-[480px] flex-col overflow-y-auto bg-bg pb-44 shadow-[-10px_0_30px_rgba(0,0,0,0.18)] animate-detail-in motion-reduce:animate-none">
-        <EventDetail event={ev} />
+      <div className="detail-overlay mx-auto h-full max-w-[480px] shadow-[-10px_0_30px_rgba(0,0,0,0.18)] animate-detail-in motion-reduce:animate-none">
+        <div className="detail-scroll flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-bg pb-44">
+          <EventDetail event={ev} />
+        </div>
       </div>
     </div>
   );
