@@ -81,14 +81,42 @@ export function DetailActions({ data }: { data: DetailActionData }) {
   useEffect(() => {
     const scroller = scrollParent(barRef.current);
     const target: HTMLElement | Window = scroller ?? window;
-    const top = () => (scroller ? scroller.scrollTop : window.scrollY);
-    let last = top();
-    function onScroll() {
-      const cur = top();
-      if (cur > last && cur > 60) setHidden(true);
-      else if (cur < last) setHidden(false);
+    // Read position + the max scrollable offset so we can clamp away iOS
+    // rubber-band/overscroll values (negative at the top, beyond max at the bottom).
+    const metrics = () =>
+      scroller
+        ? { top: scroller.scrollTop, max: scroller.scrollHeight - scroller.clientHeight }
+        : {
+            top: window.scrollY,
+            max: document.documentElement.scrollHeight - window.innerHeight,
+          };
+
+    let last = metrics().top;
+    let ticking = false;
+
+    function update() {
+      ticking = false;
+      const { top, max } = metrics();
+      const cur = Math.min(Math.max(top, 0), Math.max(max, 0)); // ignore bounce
+      // Always reveal at the very bottom so the CTA stays reachable.
+      if (max > 0 && cur >= max - 4) {
+        setHidden(false);
+        last = cur;
+        return;
+      }
+      const delta = cur - last;
+      if (Math.abs(delta) < 8) return; // ignore jitter/momentum noise
+      if (delta > 0 && cur > 60) setHidden(true);
+      else if (delta < 0) setHidden(false);
       last = cur;
     }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+
     target.addEventListener("scroll", onScroll, { passive: true });
     return () => target.removeEventListener("scroll", onScroll);
   }, []);

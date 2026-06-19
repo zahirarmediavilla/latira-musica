@@ -55,6 +55,12 @@ body {
   box-shadow: 0 0 80px rgba(0, 0, 0, 0.08);
 }
 
+/* Momentum scrolling for the detail overlay on iOS WebKit (DuckDuckGo/Safari).
+   The scroll layer lives here, separate from the animating .detail-overlay. */
+.detail-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Hide scrollbars on horizontal chip rows. */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
