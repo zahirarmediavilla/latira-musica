@@ -55,16 +55,24 @@ interface EventRow {
   recintos: VenueRow | VenueRow[] | null;
 }
 
+// A venue that is just a street (concerts "na cai") rather than a real place.
+// These are kept only as an address reference: shown in the detail, not on home.
+function isStreetVenue(name: string): boolean {
+  return /^\s*(calle|c\/)\b/i.test(name);
+}
+
 function toVenue(r: VenueRow | VenueRow[] | null): Venue | null {
   const v = Array.isArray(r) ? r[0] : r;
   if (!v) return null;
+  const name = fixCaps(str(v.nombre));
   return {
     id: String(v.id),
-    name: fixCaps(str(v.nombre)),
+    name,
     address: str(v.direccion),
     mapsUrl: str(v.maps_url),
     municipio: str(v.municipio),
     localidad: str(v.localidad),
+    addressOnly: isStreetVenue(str(v.nombre)),
   };
 }
 

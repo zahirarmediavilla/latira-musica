@@ -14,6 +14,9 @@ export function EventRow({
   last?: boolean;
 }) {
   const priceLabel = event.free ? "Gratis" : event.price;
+  // Street-only venues ("música na cai") aren't shown on the home — just the
+  // locality. The full street + map still appear in the event detail.
+  const venueName = event.venue && !event.venue.addressOnly ? event.venue.name : "";
   return (
     <Link
       href={`/event/${event.id}`}
@@ -34,10 +37,10 @@ export function EventRow({
       )}
 
       <p className="mt-2 text-[16px]">
-        {event.venue?.name && (
-          <span className="font-bold text-muted">{event.venue.name}</span>
+        {venueName && (
+          <span className="font-bold text-muted">{venueName}</span>
         )}
-        {event.venue?.name && event.location && " "}
+        {venueName && event.location && " "}
         {event.location && <span className="text-muted">{event.location}</span>}
       </p>
 
