@@ -17,6 +17,9 @@ export function EventRow({
   // Street-only venues ("música na cai") aren't shown on the home — just the
   // locality. The full street + map still appear in the event detail.
   const venueName = event.venue && !event.venue.addressOnly ? event.venue.name : "";
+  // Show the venue's locality (localidad) rather than its municipio; fall back
+  // to the event's own location when there is no linked venue.
+  const locationLabel = event.venue?.localidad || event.location;
   return (
     <Link
       href={`/event/${event.id}`}
@@ -40,8 +43,8 @@ export function EventRow({
         {venueName && (
           <span className="font-bold text-muted">{venueName}</span>
         )}
-        {venueName && event.location && " "}
-        {event.location && <span className="text-muted">{event.location}</span>}
+        {venueName && locationLabel && " "}
+        {locationLabel && <span className="text-muted">{locationLabel}</span>}
       </p>
 
       {(event.hour || priceLabel) && (
