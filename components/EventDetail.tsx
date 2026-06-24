@@ -79,9 +79,11 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
 
         <hr className="my-6 border-[#b8b8b8]" />
 
-        <p className="text-[18px] font-bold text-muted">
-          {ev.free ? "Gratis" : ev.price || "Consultar precio"}
-        </p>
+        {(ev.free || ev.price) && (
+          <p className="text-[18px] font-bold text-muted">
+            {ev.free ? "Gratis" : ev.price}
+          </p>
+        )}
 
         {ev.description && (
           <p className="whitespace-pre-line break-words py-6 text-[16px] leading-relaxed text-muted">
