@@ -42,7 +42,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           </div>
         )}
 
-        <h1 className="mt-3 font-display text-[44px] font-bold leading-[1.02] text-ink">
+        <h1 className="mt-3 break-words font-display text-[44px] font-bold leading-[1.02] text-ink">
           {ev.name}
         </h1>
 
@@ -84,7 +84,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
         </p>
 
         {ev.description && (
-          <p className="whitespace-pre-line py-6 text-[16px] leading-relaxed text-muted">
+          <p className="whitespace-pre-line break-words py-6 text-[16px] leading-relaxed text-muted">
             {ev.description}
           </p>
         )}

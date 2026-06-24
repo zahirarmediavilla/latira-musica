@@ -23,8 +23,16 @@ export default async function EventPage({
   if (!ev) notFound();
 
   return (
-    <div className="min-h-dvh pb-44">
-      <EventDetail event={ev} />
+    // Direct visits (hard navigation, e.g. opening the link in DuckDuckGo) land
+    // here instead of the intercepting overlay. Use the same fixed,
+    // viewport-locked scroll container as the modal so iOS WebKit scrolls it
+    // reliably: document scroll with min-h-dvh is flaky on WebKit because the
+    // dynamic toolbar resizes the viewport, so short pages barely scroll and
+    // feel stuck. A definite-height .detail-scroll with momentum avoids that.
+    <div className="fixed inset-0 overflow-hidden">
+      <div className="detail-scroll mx-auto flex h-full w-full max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg pb-44">
+        <EventDetail event={ev} />
+      </div>
     </div>
   );
 }
