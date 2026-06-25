@@ -20,7 +20,9 @@ function hostOf(url: string): string {
 // Shared detail content, rendered both as a full page (direct visits) and inside
 // the intercepting-route overlay that slides in over the home list.
 export function EventDetail({ event: ev }: { event: LaEvent }) {
-  const embed = ev.sampleUrl ? youtubeEmbed(ev.sampleUrl) : null;
+  // sample_url puede traer varias URLs (una por artista) separadas por
+  // espacios o saltos de línea. Cada una se muestra como embed propio.
+  const samples = ev.sampleUrl.split(/\s+/).filter(Boolean);
   const sourceHost = hostOf(ev.eventUrl);
   const place = [ev.venue?.name, ev.location].filter(Boolean).join(", ");
 
@@ -91,21 +93,24 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           </p>
         )}
 
-        {embed && (
-          <div className="mt-6 aspect-video overflow-hidden bg-black">
-            <iframe src={embed} title="Vídeo" allowFullScreen className="h-full w-full" />
-          </div>
-        )}
-        {!embed && ev.sampleUrl && (
-          <a
-            href={ev.sampleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-1 text-blue"
-          >
-            Ver vídeo / audio <ExternalIcon className="h-4 w-4" />
-          </a>
-        )}
+        {samples.map((url) => {
+          const embed = youtubeEmbed(url);
+          return embed ? (
+            <div key={url} className="mt-6 aspect-video overflow-hidden bg-black">
+              <iframe src={embed} title="Vídeo" allowFullScreen className="h-full w-full" />
+            </div>
+          ) : (
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-1 text-blue"
+            >
+              Ver vídeo / audio <ExternalIcon className="h-4 w-4" />
+            </a>
+          );
+        })}
 
         {ev.eventUrl && sourceHost && (
           <>
