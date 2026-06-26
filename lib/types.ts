@@ -7,9 +7,6 @@ export interface Venue {
   mapsUrl: string;
   municipio: string;
   localidad: string;
-  // True when the venue is just a street (e.g. "música na cai"): hidden on the
-  // home list (only the locality shows there) but still shown in the detail.
-  addressOnly: boolean;
 }
 
 export interface LaEvent {
