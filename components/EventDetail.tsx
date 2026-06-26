@@ -1,7 +1,6 @@
 import { formatMediumDate } from "@/lib/format";
 import type { LaEvent } from "@/lib/types";
 import { BackHeader } from "./BackHeader";
-import { DetailActions } from "./DetailActions";
 import { ExternalIcon } from "./icons";
 
 function youtubeEmbed(url: string): string | null {
@@ -24,7 +23,6 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
   // espacios o saltos de línea. Cada una se muestra como embed propio.
   const samples = ev.sampleUrl.split(/\s+/).filter(Boolean);
   const sourceHost = hostOf(ev.eventUrl);
-  const place = [ev.venue?.name, ev.location].filter(Boolean).join(", ");
 
   return (
     <>
@@ -127,16 +125,6 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
         )}
       </article>
 
-      <DetailActions
-        data={{
-          name: ev.name,
-          date: ev.date,
-          hour: ev.hour,
-          place,
-          description: ev.description,
-          ticketUrl: ev.ticketUrl,
-        }}
-      />
     </>
   );
 }

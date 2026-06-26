@@ -3,15 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { PrimaryButton } from "./Button";
 
-// Nearest scrollable ancestor (the overlay's scroll container); null = window.
-function scrollParent(el: HTMLElement | null): HTMLElement | null {
-  let node = el?.parentElement ?? null;
-  while (node) {
-    const oy = getComputedStyle(node).overflowY;
-    if (oy === "auto" || oy === "scroll") return node;
-    node = node.parentElement;
-  }
-  return null;
+// Find the detail scroll container. DetailActions is now a sibling of the
+// scroll div (not a descendant), so we can't walk up ancestors — look by class.
+function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
+  const root = el?.closest("[data-detail-root]") as HTMLElement | null;
+  return root?.querySelector(".detail-scroll") as HTMLElement | null;
 }
 
 export interface DetailActionData {
@@ -79,7 +75,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const scroller = scrollParent(barRef.current);
+    const scroller = findScrollContainer(barRef.current);
     const target: HTMLElement | Window = scroller ?? window;
     // Read position + the max scrollable offset so we can clamp away iOS
     // rubber-band/overscroll values (negative at the top, beyond max at the bottom).
