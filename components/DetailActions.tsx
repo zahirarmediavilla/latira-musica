@@ -117,11 +117,26 @@ export function DetailActions({ data }: { data: DetailActionData }) {
     return () => target.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Publish the bar's real rendered height (incl. iOS safe-area) so the scroll
+  // container reserves exactly that much at the bottom (see .detail-scroll).
+  // This replaces the brittle hardcoded padding that could under-clear the bar.
+  useEffect(() => {
+    const bar = barRef.current;
+    const root = bar?.closest("[data-detail-root]") as HTMLElement | null;
+    if (!bar || !root) return;
+    const sync = () =>
+      root.style.setProperty("--detail-bar-h", `${bar.offsetHeight}px`);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div
       ref={barRef}
       className={
-        "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-6 pt-6 transition-transform duration-300 ease-out " +
+        "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6 transition-transform duration-300 ease-out " +
         (hidden ? "translate-y-full" : "translate-y-0")
       }
     >

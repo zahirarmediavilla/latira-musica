@@ -34,7 +34,7 @@ export default async function EventPage({
     // DetailActions is outside the scroll div so that position:fixed works
     // reliably on iOS WebKit (fixed inside overflow:scroll is unreliable).
     <div data-detail-root className="fixed inset-0 overflow-hidden">
-      <div className="detail-scroll mx-auto flex h-full w-full max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg pb-52">
+      <div className="detail-scroll mx-auto flex h-full w-full max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg pb-[calc(var(--detail-bar-h)_+_3rem)]">
         <EventDetail event={ev} />
       </div>
       <DetailActions

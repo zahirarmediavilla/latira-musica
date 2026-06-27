@@ -25,7 +25,7 @@ export default async function EventModal({
     // reliably on iOS WebKit (fixed inside overflow:scroll is unreliable).
     <div data-detail-root className="fixed inset-0 z-50 overflow-hidden">
       <div className="detail-overlay mx-auto h-full max-w-[480px] shadow-[-10px_0_30px_rgba(0,0,0,0.18)] animate-detail-in motion-reduce:animate-none">
-        <div className="detail-scroll flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-bg pb-52">
+        <div className="detail-scroll flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-bg pb-[calc(var(--detail-bar-h)_+_3rem)]">
           <EventDetail event={ev} />
         </div>
       </div>
