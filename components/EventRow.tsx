@@ -15,6 +15,9 @@ export function EventRow({
 }) {
   const priceLabel = event.free ? "Gratis" : event.price;
   const venueName = event.venue?.name ?? "";
+  // Prefer the venue's locality (localidad) over the event's raw location, which
+  // may carry the municipio. Falls back to event.location when there's no venue.
+  const locationLabel = event.venue?.localidad || event.location;
   return (
     <Link
       href={`/event/${event.id}`}
@@ -38,8 +41,8 @@ export function EventRow({
         {venueName && (
           <span className="font-bold text-muted">{venueName}</span>
         )}
-        {venueName && event.location && " "}
-        {event.location && <span className="text-muted">{event.location}</span>}
+        {venueName && locationLabel && " "}
+        {locationLabel && <span className="text-muted">{locationLabel}</span>}
       </p>
 
       {(event.hour || priceLabel) && (
