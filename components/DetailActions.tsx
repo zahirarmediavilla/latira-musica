@@ -127,8 +127,10 @@ export function DetailActions({ data }: { data: DetailActionData }) {
     const sync = () =>
       root.style.setProperty("--detail-bar-h", `${bar.offsetHeight}px`);
     sync();
+    // Observe the border-box so changes in the bar's padding (iOS safe-area,
+    // orientation changes) also update the reserved height, not just content size.
     const ro = new ResizeObserver(sync);
-    ro.observe(bar);
+    ro.observe(bar, { box: "border-box" });
     return () => ro.disconnect();
   }, []);
 
