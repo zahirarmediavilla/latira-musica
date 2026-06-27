@@ -28,7 +28,10 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
     <>
       <BackHeader />
 
-      <article className="px-5 pt-2">
+      {/* Regla única para TODAS las páginas de detalle: un colchón inferior
+          generoso para que el último contenido ("Visto en", vídeo…) nunca quede
+          pegado al borde ni a la barra de acciones, en cualquier dispositivo. */}
+      <article className="px-5 pt-2 pb-24">
         {ev.genres.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {ev.genres.map((g) => (
