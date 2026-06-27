@@ -61,15 +61,6 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* The scroll container reserves room at the bottom for the fixed DetailActions
-   bar (see pb-[calc(var(--detail-bar-h)_+_3rem)] on it) so the last content
-   ("Visto en") always clears the bar. DetailActions measures the bar's real
-   height (ticket vs no-ticket, font scaling, iOS safe-area) into --detail-bar-h
-   as an inline style; this is just the SSR / first-paint fallback. */
-[data-detail-root] {
-  --detail-bar-h: 11rem;
-}
-
 /* Hide scrollbars on horizontal chip rows. */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

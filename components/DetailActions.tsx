@@ -1,14 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { PrimaryButton } from "./Button";
-
-// Find the detail scroll container. DetailActions is now a sibling of the
-// scroll div (not a descendant), so we can't walk up ancestors — look by class.
-function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
-  const root = el?.closest("[data-detail-root]") as HTMLElement | null;
-  return root?.querySelector(".detail-scroll") as HTMLElement | null;
-}
 
 export interface DetailActionData {
   name: string;
@@ -43,6 +35,11 @@ function buildIcs(ev: DetailActionData): string {
     .join("\r\n");
 }
 
+// Action bar at the bottom of the detail. It is a NORMAL flex child below the
+// scroll area (not position:fixed), so it can never overlap the content — the
+// last item ("Visto en") is always fully scrollable above it on every device.
+// No padding/margin math, no scroll listeners: the layout guarantees clearance.
+// The safe-area padding keeps the CTA above the iPhone home indicator.
 export function DetailActions({ data }: { data: DetailActionData }) {
   function addToCalendar() {
     const blob = new Blob([buildIcs(data)], { type: "text/calendar" });
@@ -70,78 +67,8 @@ export function DetailActions({ data }: { data: DetailActionData }) {
 
   const hasTicket = Boolean(data.ticketUrl);
 
-  // Hide the bar when scrolling down the content, reveal it when scrolling up.
-  const barRef = useRef<HTMLDivElement>(null);
-  const [hidden, setHidden] = useState(false);
-
-  useEffect(() => {
-    const scroller = findScrollContainer(barRef.current);
-    const target: HTMLElement | Window = scroller ?? window;
-    // Read position + the max scrollable offset so we can clamp away iOS
-    // rubber-band/overscroll values (negative at the top, beyond max at the bottom).
-    const metrics = () =>
-      scroller
-        ? { top: scroller.scrollTop, max: scroller.scrollHeight - scroller.clientHeight }
-        : {
-            top: window.scrollY,
-            max: document.documentElement.scrollHeight - window.innerHeight,
-          };
-
-    let last = metrics().top;
-    let ticking = false;
-
-    function update() {
-      ticking = false;
-      const { top, max } = metrics();
-      const cur = Math.min(Math.max(top, 0), Math.max(max, 0)); // ignore bounce
-      // Always reveal at the very bottom so the CTA stays reachable.
-      if (max > 0 && cur >= max - 4) {
-        setHidden(false);
-        last = cur;
-        return;
-      }
-      const delta = cur - last;
-      if (Math.abs(delta) < 8) return; // ignore jitter/momentum noise
-      if (delta > 0 && cur > 60) setHidden(true);
-      else if (delta < 0) setHidden(false);
-      last = cur;
-    }
-
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(update);
-    }
-
-    target.addEventListener("scroll", onScroll, { passive: true });
-    return () => target.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Publish the bar's real rendered height (incl. iOS safe-area) so the scroll
-  // container reserves exactly that much at the bottom (see .detail-scroll).
-  // This replaces the brittle hardcoded padding that could under-clear the bar.
-  useEffect(() => {
-    const bar = barRef.current;
-    const root = bar?.closest("[data-detail-root]") as HTMLElement | null;
-    if (!bar || !root) return;
-    const sync = () =>
-      root.style.setProperty("--detail-bar-h", `${bar.offsetHeight}px`);
-    sync();
-    // Observe the border-box so changes in the bar's padding (iOS safe-area,
-    // orientation changes) also update the reserved height, not just content size.
-    const ro = new ResizeObserver(sync);
-    ro.observe(bar, { box: "border-box" });
-    return () => ro.disconnect();
-  }, []);
-
   return (
-    <div
-      ref={barRef}
-      className={
-        "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-muted bg-bg px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6 transition-transform duration-300 ease-out " +
-        (hidden ? "translate-y-full" : "translate-y-0")
-      }
-    >
+    <div className="shrink-0 border-t border-muted bg-bg px-5 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div
         className={
           "mb-2 flex " + (hasTicket ? "justify-between" : "justify-center")
