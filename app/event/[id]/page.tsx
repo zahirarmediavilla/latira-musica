@@ -25,28 +25,27 @@ export default async function EventPage({
   const place = [ev.venue?.name, ev.location].filter(Boolean).join(", ");
 
   return (
-    // Direct visits (hard navigation, e.g. opening the link in DuckDuckGo) land
-    // here instead of the intercepting overlay. Use the same fixed,
-    // viewport-locked scroll container as the modal so iOS WebKit scrolls it
-    // reliably: document scroll with min-h-dvh is flaky on WebKit because the
-    // dynamic toolbar resizes the viewport, so short pages barely scroll and
-    // feel stuck. A definite-height .detail-scroll with momentum avoids that.
-    // DetailActions is outside the scroll div so that position:fixed works
-    // reliably on iOS WebKit (fixed inside overflow:scroll is unreliable).
-    <div data-detail-root className="fixed inset-0 overflow-hidden">
-      <div className="detail-scroll mx-auto flex h-full w-full max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg pb-[calc(var(--detail-bar-h)_+_3rem)]">
-        <EventDetail event={ev} />
+    // Direct visits (hard navigation) land here instead of the intercepting
+    // overlay. Fixed, viewport-locked flex column: the scroll area flexes to
+    // fill the space and the action bar sits BELOW it as a normal child, so the
+    // bar can never overlap the content — the last item ("Visto en") is always
+    // scrollable into view on any device, with no padding/safe-area math.
+    <div className="fixed inset-0 overflow-hidden">
+      <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
+        <div className="detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain bg-bg">
+          <EventDetail event={ev} />
+        </div>
+        <DetailActions
+          data={{
+            name: ev.name,
+            date: ev.date,
+            hour: ev.hour,
+            place,
+            description: ev.description,
+            ticketUrl: ev.ticketUrl,
+          }}
+        />
       </div>
-      <DetailActions
-        data={{
-          name: ev.name,
-          date: ev.date,
-          hour: ev.hour,
-          place,
-          description: ev.description,
-          ticketUrl: ev.ticketUrl,
-        }}
-      />
     </div>
   );
 }
