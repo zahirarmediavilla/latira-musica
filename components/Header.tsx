@@ -27,7 +27,9 @@ export function Header({
   return (
     <header className="sticky top-0 z-30 bg-ink text-white">
       <div className="flex items-center justify-between px-5 pt-5">
-        <h1 className="leading-none">
+        {/* Brand logo — not the page heading (the H1 is the page's semantic
+            title), so it renders as a plain element to keep one H1 per page. */}
+        <div className="leading-none">
           <Image
             src="/LaTira-logo.svg"
             alt="LaTira"
@@ -36,7 +38,7 @@ export function Header({
             priority
             className="h-[3.33rem] w-auto"
           />
-        </h1>
+        </div>
         <button
           type="button"
           onClick={onMenu}

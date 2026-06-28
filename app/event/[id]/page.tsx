@@ -3,6 +3,14 @@ import type { Metadata } from "next";
 import { getEventById } from "@/lib/events";
 import { EventDetail } from "@/components/EventDetail";
 import { DetailActions } from "@/components/DetailActions";
+import { EventJsonLd } from "@/components/JsonLd";
+import {
+  SITE_NAME,
+  canonicalFor,
+  eventDescription,
+  eventTitle,
+  openGraphFor,
+} from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -11,7 +19,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const ev = await getEventById(id);
-  return { title: ev ? `${ev.name} — LaTira` : "LaTira" };
+  if (!ev) return {}; // falls back to the layout defaults
+
+  const title = eventTitle(ev);
+  const description = eventDescription(ev);
+  const path = `/event/${ev.id}`;
+
+  return {
+    title,
+    description,
+    robots: { index: true, follow: true },
+    alternates: canonicalFor(path),
+    openGraph: openGraphFor({
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      type: "article",
+      path,
+    }),
+  };
 }
 
 export default async function EventPage({
@@ -31,6 +56,7 @@ export default async function EventPage({
     // bar can never overlap the content — the last item ("Visto en") is always
     // scrollable into view on any device, with no padding/safe-area math.
     <div className="fixed inset-0 overflow-hidden">
+      <EventJsonLd event={ev} />
       <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
         <div className="detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain bg-bg">
           <EventDetail event={ev} />
