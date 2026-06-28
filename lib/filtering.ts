@@ -31,9 +31,10 @@ export function rangeForChip(chip: DateChip): { from: string; to: string } {
   const dow = today.getDay(); // 0 Sun .. 6 Sat
   if (chip === "finde") {
     if (dow === 0) return { from: ymd(today), to: ymd(today) }; // Sunday
-    if (dow === 6) return { from: ymd(today), to: ymd(addDays(today, 1)) }; // Sat
-    const sat = addDays(today, 6 - dow);
-    return { from: ymd(sat), to: ymd(addDays(sat, 1)) };
+    if (dow === 6) return { from: ymd(today), to: ymd(addDays(today, 1)) }; // Sat–Sun
+    if (dow === 5) return { from: ymd(today), to: ymd(addDays(today, 2)) }; // Fri–Sun
+    const fri = addDays(today, 5 - dow);
+    return { from: ymd(fri), to: ymd(addDays(fri, 2)) }; // next Fri–Sun
   }
   if (chip === "semana") {
     const toSunday = (7 - dow) % 7;
