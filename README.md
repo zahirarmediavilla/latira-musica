@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LaTira — web
 
-## Getting Started
+Agenda de conciertos y eventos musicales de Asturias. Es la web pública de
+**Agendina**: lista los eventos próximos y permite filtrarlos por zona y fecha.
 
-First, run the development server:
+- **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind v4.
+- **Datos**: se leen de **Supabase** (tabla `eventos` + recintos), en server
+  components. La web es **solo lectura** (clave anónima); las escrituras en la
+  base de datos se hacen desde el repo `agenda-scraper`.
+
+## Arranque
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Otros scripts: `npm run build`, `npm run start`, `npm run lint`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variables de entorno
 
-## Learn More
+Se ponen en `web/.env.local` (ya está en `.gitignore`):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Lectura de datos (obligatorias)
+NEXT_PUBLIC_SUPABASE_URL=https://<proyecto>.supabase.co
+SUPABASE_ANON_KEY=<clave anónima/publishable>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# SEO: base URL del sitio (opcional). Sin ella, la web funciona con metadata
+# relativa; al definirla se activan canonical, og:url y sitemap.
+NEXT_PUBLIC_SITE_URL=https://latira.org
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura
 
-## Deploy on Vercel
+- `app/page.tsx` — home (listado de eventos próximos). Es `force-dynamic` para
+  que los eventos recién scrapeados aparezcan sin redeploy; la lectura de
+  Supabase se cachea ~5 min (`lib/supabase.ts`).
+- `app/event/[id]/page.tsx` — ficha de evento (visita directa).
+- `app/@modal/(.)event/[id]` — la misma ficha como **modal interceptado** que
+  se desliza sobre la home cuando navegas desde dentro de la app.
+- `lib/` — capa de dominio: lectura de datos (`events.ts`, `supabase.ts`),
+  tipos (`types.ts`), filtros (`filtering.ts`, `zones.ts`), formato de fechas
+  (`format.ts`) y SEO/JSON-LD (`seo.ts`, `jsonld.ts`).
+- `components/` — UI (home, ficha, cabecera, filtros, calendario…).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Fuentes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Inter** (texto) vía `next/font`.
+- **Vremena Grotesk** (titulares), self-hosted desde `public/Vremena Grotesk/`
+  vía `@font-face` en `app/globals.css`. Solo se incluyen los 3 pesos usados
+  (regular/medium/bold) en `woff2`/`woff`.
+
+## Notas
+
+- Antes de tocar código, lee `AGENTS.md`: esta versión de Next puede traer
+  cambios respecto a lo conocido; consulta `node_modules/next/dist/docs/`.
+- Integrar analytics (Umami): ver `ANALYTICS-KICKOFF.md`.
