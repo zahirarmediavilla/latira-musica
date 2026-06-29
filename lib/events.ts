@@ -13,13 +13,36 @@ function isFree(price: string): boolean {
   return /grat|libre/i.test(price);
 }
 
+// Spanish minor words kept lowercase in Title Case unless they open the title
+// or a segment (after "+", "/", "&", "-", ":"…). Mirrors normalize.MINOR_WORDS.
+const MINOR_WORDS = new Set([
+  "y", "e", "o", "u", "ni",
+  "el", "la", "los", "las", "un", "una", "unos", "unas", "lo", "del", "al",
+  "a", "ante", "bajo", "con", "contra", "de", "desde", "durante", "en", "entre",
+  "hacia", "hasta", "mediante", "para", "por", "según", "segun", "sin", "so",
+  "sobre", "tras",
+]);
+const SEGMENT_SEPARATORS = new Set(["+", "/", "&", "-", "–", "—", ":", "|", "("]);
+
 // Convert ALL-CAPS values (e.g. "RITMO VUDÚ") to Title Case. Strings that
-// already contain a lowercase letter are left untouched.
+// already contain a lowercase letter are left untouched. Minor words (y, de,
+// la…) stay lowercase unless first / opening a segment. Mirrors
+// agenda-scraper/normalize.py:title_case.
 function fixCaps(s: string): string {
   if (!s || /\p{Ll}/u.test(s)) return s;
-  return s
+  const titled = s
     .toLowerCase()
     .replace(/(^|[^\p{L}])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase());
+  let startsSegment = true;
+  return titled
+    .split(" ")
+    .map((tok) => {
+      const lowered = tok.toLowerCase();
+      const out = !startsSegment && MINOR_WORDS.has(lowered) ? lowered : tok;
+      startsSegment = SEGMENT_SEPARATORS.has(tok);
+      return out;
+    })
+    .join(" ");
 }
 
 // Columns to select, including the joined venue (recintos) via venue_id.
