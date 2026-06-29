@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { supabase } from "./supabase";
 import type { LaEvent, Venue } from "./types";
 import { formatHour } from "./format";
@@ -128,8 +129,9 @@ function today(): string {
 }
 
 /** All upcoming events (date today or later), sorted by date then hour,
- *  joined with venue data. */
-export async function getEvents(): Promise<LaEvent[]> {
+ *  joined with venue data. Wrapped in React's `cache` so repeat calls within a
+ *  single render (e.g. metadata + page) hit Supabase only once. */
+export const getEvents = cache(async (): Promise<LaEvent[]> => {
   const { data, error } = await supabase()
     .from("eventos")
     .select(SELECT)
@@ -143,9 +145,11 @@ export async function getEvents(): Promise<LaEvent[]> {
     .map(toEvent)
     .filter((e) => e.date) // need a date to place it in the list
     .sort(byDateThenHour);
-}
+});
 
-export async function getEventById(id: string): Promise<LaEvent | null> {
+// Wrapped in React's `cache`: the event page calls this from both
+// generateMetadata and the component, so it would otherwise read Supabase twice.
+export const getEventById = cache(async (id: string): Promise<LaEvent | null> => {
   const numId = Number(id);
   if (!Number.isInteger(numId)) return null;
 
@@ -157,4 +161,4 @@ export async function getEventById(id: string): Promise<LaEvent | null> {
 
   if (error) throw new Error(`Supabase: ${error.message}`);
   return data ? toEvent(data as unknown as EventRow) : null;
-}
+});
