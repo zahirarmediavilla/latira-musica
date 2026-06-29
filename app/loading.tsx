@@ -1,9 +1,15 @@
+import { HEADER_H } from "@/lib/layout";
+
 // Shown while the home page streams (the page is force-dynamic, so this fallback
 // appears on each request until getEvents() resolves). Mirrors the EventList
 // layout — a date gutter plus a few rows — so the wait feels like the real list.
 export default function Loading() {
   return (
-    <div className="animate-pulse pt-[161px]" aria-hidden="true">
+    <div
+      className="animate-pulse"
+      style={{ paddingTop: HEADER_H }}
+      aria-hidden="true"
+    >
       {Array.from({ length: 4 }).map((_, g) => (
         <div
           key={g}

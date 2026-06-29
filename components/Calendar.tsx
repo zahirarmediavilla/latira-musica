@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { ymd } from "@/lib/filtering";
+import { MESES } from "@/lib/format";
 import { CheckIcon } from "./icons";
 
-const MESES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
 const DOW = ["L", "M", "X", "J", "V", "S", "D"]; // Monday-first
 
 interface CalendarProps {

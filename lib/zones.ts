@@ -1,4 +1,5 @@
 import type { LaEvent, Zone } from "./types";
+import { norm } from "./text";
 
 // Zone -> municipios that belong to it (spec section 5).
 const ZONE_MUNICIPIOS: Record<Zone, string[]> = {
@@ -88,14 +89,6 @@ const ZONE_MUNICIPIOS: Record<Zone, string[]> = {
     "Illano",
   ],
 };
-
-function norm(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // strip accents
-    .trim();
-}
 
 // Build a normalized name -> zone lookup, plus aliases for the values that
 // actually appear in the Events.Location / Venues.Municipio single-selects.

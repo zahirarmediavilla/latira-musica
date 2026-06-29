@@ -2,7 +2,7 @@
 // time as UTC (e.g. "2026-08-08T19:00:00+00:00" means 19:00), so we read the UTC
 // parts to avoid a timezone shift.
 
-const MESES = [
+export const MESES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];

@@ -1,5 +1,6 @@
 import type { DayGroup, LaEvent, Zone } from "./types";
 import { zoneForEvent } from "./zones";
+import { norm } from "./text";
 
 export type DateChip = "finde" | "semana" | "mes";
 
@@ -51,13 +52,6 @@ export function filtersActive(f: Filters): boolean {
 
 export function countActive(f: Filters): number {
   return f.zones.length + (f.from || f.to ? 1 : 0);
-}
-
-function norm(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
 }
 
 /** Apply zone + date-range filters and a free-text query (name/artists). */
