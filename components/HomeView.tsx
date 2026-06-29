@@ -11,6 +11,7 @@ import {
   groupByDay,
 } from "@/lib/filtering";
 import { dayNumber, monthAbbr } from "@/lib/format";
+import { HEADER_H, HEADER_WITH_FILTERS } from "@/lib/layout";
 import { Header } from "./Header";
 import { EventList } from "./EventList";
 import { RemovableTag } from "./Chip";
@@ -69,7 +70,10 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       />
 
       {filtersActive(filters) && (
-        <div className="no-scrollbar sticky top-[161px] z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-1.5">
+        <div
+          className="no-scrollbar sticky z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-1.5"
+          style={{ top: HEADER_H }}
+        >
           {dateLabel && (
             <RemovableTag
               label={dateLabel}
@@ -108,7 +112,10 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           )}
         </div>
       ) : (
-        <EventList groups={groups} dateTop={filtersActive(filters) ? 215 : 161} />
+        <EventList
+          groups={groups}
+          dateTop={filtersActive(filters) ? HEADER_WITH_FILTERS : HEADER_H}
+        />
       )}
 
       {filterOpen && (

@@ -1,15 +1,16 @@
 import type { DayGroup } from "@/lib/types";
 import { dayNumber, monthAbbr } from "@/lib/format";
+import { HEADER_H } from "@/lib/layout";
 import { EventRow } from "./EventRow";
 
 // Home list spacing mirrors the Figma frame:
 //  - date gutter: 72px wide, 20px gap -> event content starts at x=92
 //  - the date block (yellow stripe sized to the day/month text + the day / month)
-//    sticks to the top-left flush under the ~161px header (blue line) while its
+//    sticks to the top-left flush under the header (blue line, HEADER_H) while its
 //    day's events scroll, until the next day pushes it away.
 export function EventList({
   groups,
-  dateTop = 161,
+  dateTop = HEADER_H,
 }: {
   groups: DayGroup[];
   dateTop?: number;
