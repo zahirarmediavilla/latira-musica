@@ -54,7 +54,12 @@ export function countActive(f: Filters): number {
   return f.zones.length + (f.from || f.to ? 1 : 0);
 }
 
-/** Apply zone + date-range filters and a free-text query (name/artists). */
+/** Apply zone + date-range filters and a free-text query (name/artists).
+ *
+ *  Name/artists only, by design: the venue and locality a row displays are not
+ *  searchable, and that is not a bug to fix. Geography belongs to the zone
+ *  filter; a locality that does match ("Luanco") matches as part of the event
+ *  name. Ask before widening the haystack. */
 export function applyFilters(
   events: LaEvent[],
   f: Filters,
