@@ -55,7 +55,10 @@ export function DetailActions({ data }: { data: DetailActionData }) {
     const url = typeof window !== "undefined" ? window.location.href : "";
     try {
       if (navigator.share) {
-        await navigator.share({ title: data.name, text: data.name, url });
+        // El enlace va DENTRO del texto a propósito: WhatsApp (y otros chats)
+        // ignoran el campo `url` cuando también reciben `text`, y solo pegaban
+        // el nombre. Metiéndolo en el texto, el enlace viaja siempre.
+        await navigator.share({ title: data.name, text: `${data.name}\n${url}` });
       } else {
         await navigator.clipboard.writeText(url);
         alert("Enlace copiado");
