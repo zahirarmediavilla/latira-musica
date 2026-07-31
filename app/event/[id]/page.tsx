@@ -8,7 +8,6 @@ import {
   SITE_NAME,
   canonicalFor,
   eventDescription,
-  eventPlaceLabel,
   eventTitle,
   openGraphFor,
 } from "@/lib/seo";
@@ -48,7 +47,6 @@ export default async function EventPage({
   const { id } = await params;
   const ev = await getEventById(id);
   if (!ev) notFound();
-  const place = eventPlaceLabel(ev);
 
   return (
     // Direct visits (hard navigation) land here instead of the intercepting
@@ -63,14 +61,7 @@ export default async function EventPage({
           <EventDetail event={ev} />
         </div>
         <DetailActions
-          data={{
-            name: ev.name,
-            date: ev.date,
-            hour: ev.hour,
-            place,
-            description: ev.description,
-            ticketUrl: ev.ticketUrl,
-          }}
+          data={{ id: ev.id, name: ev.name, ticketUrl: ev.ticketUrl }}
         />
       </div>
     </div>

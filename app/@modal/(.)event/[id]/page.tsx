@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/events";
 import { EventDetail } from "@/components/EventDetail";
 import { DetailActions } from "@/components/DetailActions";
-import { eventPlaceLabel } from "@/lib/seo";
 
 // Intercepted detail: when navigating from within the app, the detail renders
 // here as an overlay that slides in over the home list (which stays mounted).
@@ -14,7 +13,6 @@ export default async function EventModal({
   const { id } = await params;
   const ev = await getEventById(id);
   if (!ev) notFound();
-  const place = eventPlaceLabel(ev);
 
   return (
     // Fixed wrapper clips the off-screen start of the slide so it never adds a
@@ -28,14 +26,7 @@ export default async function EventModal({
           <EventDetail event={ev} />
         </div>
         <DetailActions
-          data={{
-            name: ev.name,
-            date: ev.date,
-            hour: ev.hour,
-            place,
-            description: ev.description,
-            ticketUrl: ev.ticketUrl,
-          }}
+          data={{ id: ev.id, name: ev.name, ticketUrl: ev.ticketUrl }}
         />
       </div>
     </div>
