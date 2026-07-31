@@ -71,6 +71,17 @@ export function eventPlace(ev: LaEvent): string {
 }
 
 /**
+ * Combined place label, same order the UI shows: "localidad · recinto".
+ * Falls back to whichever half exists (e.g. only the venue, or only the town).
+ */
+export function eventPlaceLabel(ev: LaEvent): string {
+  const city = ev.venue?.localidad || ev.location || "";
+  const venue = ev.venue?.name || "";
+  if (city && venue) return `${city} · ${venue}`;
+  return venue || city;
+}
+
+/**
  * Page title for an event, WITHOUT the "| LaTira" suffix (the root layout's
  * title template adds it). Enriched with city and short date when available,
  * kept concise — e.g. "Sisters Of Doom · Gijón, 16 jun".
@@ -88,7 +99,7 @@ export function eventTitle(ev: LaEvent): string {
  * the place clause is dropped when there is no venue/location.
  */
 export function eventDescription(ev: LaEvent): string {
-  const place = eventPlace(ev);
+  const place = eventPlaceLabel(ev);
   const date = ev.date ? formatMediumDate(ev.date) : "";
   const when = date ? ` el ${date}` : "";
   const where = place ? ` en ${place}` : "";

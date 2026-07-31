@@ -38,11 +38,11 @@ export function EventRow({
       )}
 
       <p className="mt-2 text-[16px]">
-        {venueName && (
-          <span className="font-bold text-muted">{venueName}</span>
+        {locationLabel && (
+          <span className="font-bold text-muted">{locationLabel}</span>
         )}
-        {venueName && locationLabel && " "}
-        {locationLabel && <span className="text-muted">{locationLabel}</span>}
+        {locationLabel && venueName && <span className="text-muted"> · </span>}
+        {venueName && <span className="text-muted">{venueName}</span>}
       </p>
 
       {(event.hour || priceLabel) && (

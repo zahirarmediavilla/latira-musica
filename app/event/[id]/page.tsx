@@ -8,6 +8,7 @@ import {
   SITE_NAME,
   canonicalFor,
   eventDescription,
+  eventPlaceLabel,
   eventTitle,
   openGraphFor,
 } from "@/lib/seo";
@@ -47,7 +48,7 @@ export default async function EventPage({
   const { id } = await params;
   const ev = await getEventById(id);
   if (!ev) notFound();
-  const place = [ev.venue?.name, ev.location].filter(Boolean).join(", ");
+  const place = eventPlaceLabel(ev);
 
   return (
     // Direct visits (hard navigation) land here instead of the intercepting

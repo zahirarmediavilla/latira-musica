@@ -23,6 +23,8 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
   // espacios o saltos de línea. Cada una se muestra como embed propio.
   const samples = ev.sampleUrl.split(/\s+/).filter(Boolean);
   const sourceHost = hostOf(ev.eventUrl);
+  // Misma preferencia que el listado: localidad del recinto sobre location cruda.
+  const locationLabel = ev.venue?.localidad || ev.location;
 
   return (
     <>
@@ -60,19 +62,29 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
 
         {(ev.venue?.name || ev.location) && (
           <p className="mt-1 text-[18px]">
-            {ev.venue?.mapsUrl ? (
-              <a
-                href={ev.venue.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold text-muted underline"
-              >
-                {ev.venue?.name || ev.location}
-              </a>
+            {ev.venue?.name ? (
+              <>
+                {locationLabel && (
+                  <>
+                    <span className="font-bold text-muted">{locationLabel}</span>
+                    <span className="text-muted"> · </span>
+                  </>
+                )}
+                {ev.venue.mapsUrl ? (
+                  <a
+                    href={ev.venue.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted underline"
+                  >
+                    {ev.venue.name}
+                  </a>
+                ) : (
+                  <span className="text-muted">{ev.venue.name}</span>
+                )}
+              </>
             ) : (
-              <span className="font-bold text-muted">
-                {ev.venue?.name || ev.location}
-              </span>
+              <span className="font-bold text-muted">{ev.location}</span>
             )}
           </p>
         )}
