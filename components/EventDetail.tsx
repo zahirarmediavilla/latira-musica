@@ -89,7 +89,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           </p>
         )}
         {ev.venue?.address && (
-          <p className="mt-0.5 text-[16px] text-muted">{ev.venue.address}</p>
+          <p className="mt-1 text-[16px] text-muted">{ev.venue.address}</p>
         )}
 
         <hr className="my-6 border-[#b8b8b8]" />

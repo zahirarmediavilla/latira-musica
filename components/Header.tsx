@@ -50,7 +50,7 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-3 px-5 pb-5 pt-4">
-        <div className="flex flex-1 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-ink">
+        <div className="flex flex-1 items-center gap-2 rounded-full bg-white px-4 py-3 text-ink">
           <SearchIcon className="h-5 w-5 text-muted" />
           <input
             value={query}

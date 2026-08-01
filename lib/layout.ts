@@ -2,10 +2,10 @@
 // sync across the header, the date gutter and the loading skeleton.
 
 /** Height of the sticky home header (logo + search + blue bar). */
-export const HEADER_H = 161;
+export const HEADER_H = 165;
 
 /** Extra height added by the active-filters chip row under the header. */
-export const FILTER_ROW_H = 54;
+export const FILTER_ROW_H = 56;
 
 /** Sticky offset for the date gutter when the filter chip row is visible. */
 export const HEADER_WITH_FILTERS = HEADER_H + FILTER_ROW_H;

@@ -24,13 +24,13 @@ export function EventList({
           style={{ borderBottom: "1.5px solid #b8b8b8" }}
         >
           <div className="w-[72px] shrink-0">
-            <div className="sticky flex gap-3.5" style={{ top: dateTop }}>
-              <div className="w-1.5 self-stretch bg-yellow" />
+            <div className="sticky flex gap-4" style={{ top: dateTop }}>
+              <div className="w-2 self-stretch bg-yellow" />
               <div className="flex flex-col justify-center py-5 text-center leading-none">
                 <div className="font-display text-[26px] font-bold text-ink">
                   {dayNumber(group.date)}
                 </div>
-                <div className="mt-0.5 text-xs font-semibold tracking-wide text-muted">
+                <div className="mt-1 text-xs font-semibold tracking-wide text-muted">
                   {monthAbbr(group.date)}
                 </div>
               </div>

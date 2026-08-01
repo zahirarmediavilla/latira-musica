@@ -17,8 +17,8 @@ export default function Loading() {
           style={{ borderBottom: "1.5px solid #b8b8b8" }}
         >
           <div className="w-[72px] shrink-0">
-            <div className="flex gap-3.5">
-              <div className="w-1.5 self-stretch bg-yellow" />
+            <div className="flex gap-4">
+              <div className="w-2 self-stretch bg-yellow" />
               <div className="flex flex-col gap-1 py-5">
                 <div className="h-6 w-7 rounded bg-canvas" />
                 <div className="h-3 w-6 rounded bg-canvas" />

@@ -71,7 +71,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
 
       {filtersActive(filters) && (
         <div
-          className="no-scrollbar sticky z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-1.5"
+          className="no-scrollbar sticky z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-2"
           style={{ top: HEADER_H }}
         >
           {dateLabel && (
