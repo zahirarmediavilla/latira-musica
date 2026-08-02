@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { SearchIcon, SlidersIcon, MenuIcon, CloseIcon, ClearCircleIcon } from "./icons";
 
 interface HeaderProps {
@@ -23,6 +24,13 @@ export function Header({
   filterCount,
 }: HeaderProps) {
   const searching = query.trim().length > 0;
+
+  // Keep the last real count so the text fades out with its true value
+  // (not a flash of 0) while the bar collapses back to a thin rule.
+  const [lastCount, setLastCount] = useState(0);
+  useEffect(() => {
+    if (resultCount !== null) setLastCount(resultCount);
+  }, [resultCount]);
 
   return (
     <header className="sticky top-0 z-30 bg-ink text-white">
@@ -88,14 +96,28 @@ export function Header({
         )}
       </div>
 
-      {/* Blue bar: a thin rule normally, taller with a count while searching. */}
-      {resultCount === null ? (
-        <div className="h-2 bg-blue" />
-      ) : (
-        <p className="bg-blue px-5 py-2 text-sm font-semibold text-white">
-          {resultCount} {resultCount === 1 ? "resultado" : "resultados"}
+      {/* Blue bar: a thin rule that grows into the result count while
+          searching. A single element (not a swap) so its height animates. */}
+      <div
+        className="overflow-hidden bg-blue"
+        style={{
+          height: resultCount === null ? "0.5rem" : "2.25rem",
+          transition: "height 420ms cubic-bezier(0.34, 1.4, 0.5, 1)",
+        }}
+        aria-hidden={resultCount === null}
+      >
+        <p
+          className="px-5 py-2 text-sm font-semibold text-white"
+          style={{
+            opacity: resultCount === null ? 0 : 1,
+            transform: resultCount === null ? "translateY(6px)" : "none",
+            transition:
+              "opacity 280ms ease 60ms, transform 340ms cubic-bezier(0.34, 1.4, 0.5, 1) 60ms",
+          }}
+        >
+          {lastCount} {lastCount === 1 ? "resultado" : "resultados"}
         </p>
-      )}
+      </div>
     </header>
   );
 }
