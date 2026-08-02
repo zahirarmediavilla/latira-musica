@@ -33,6 +33,7 @@ export const ZONES = [
   "Cuenca del Caudal",
   "Cuenca del Nalón",
   "Área central",
+  "Montaña central",
   "Oriente de Asturias",
   "Occidente de Asturias",
 ] as const;
@@ -49,7 +50,11 @@ export const ZONE_META: Record<Zone, { label: string; sub?: string }> = {
     label: "Cuenca del Nalón",
     sub: "Langreo, SMRA, Laviana, Sobrescobio, Caso",
   },
-  "Área central": { label: "Área central", sub: "Siero, Llanera, Piloña, Noreña…" },
+  "Área central": { label: "Área central", sub: "Siero, Llanera, Noreña…" },
+  "Montaña central": {
+    label: "Montaña central",
+    sub: "Quirós, Teverga, Riosa, Morcín…",
+  },
   "Oriente de Asturias": {
     label: "Oriente",
     sub: "Villaviciosa, Llanes, Ribadesella…",
