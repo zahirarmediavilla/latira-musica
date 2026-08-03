@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SearchIcon, SlidersIcon, MenuIcon, CloseIcon, ClearCircleIcon } from "./icons";
 
 interface HeaderProps {
@@ -26,11 +26,13 @@ export function Header({
   const searching = query.trim().length > 0;
 
   // Keep the last real count so the text fades out with its true value
-  // (not a flash of 0) while the bar collapses back to a thin rule.
+  // (not a flash of 0) while the bar collapses back to a thin rule. Se ajusta
+  // en render (patrón oficial de React para estado derivado) en vez de en un
+  // efecto, que disparaba un render de más y saltaba el linter.
   const [lastCount, setLastCount] = useState(0);
-  useEffect(() => {
-    if (resultCount !== null) setLastCount(resultCount);
-  }, [resultCount]);
+  if (resultCount !== null && resultCount !== lastCount) {
+    setLastCount(resultCount);
+  }
 
   return (
     <header className="sticky top-0 z-30 bg-ink text-white">
