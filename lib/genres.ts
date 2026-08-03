@@ -70,12 +70,12 @@ const GROUP_SET = new Map<string, Set<string>>(
   GENRE_GROUPS.map((g) => [g.label, new Set(g.genres)]),
 );
 
-/** Un evento es "en familia" si es Infantil o empieza antes de las 20:00.
+/** Un evento es "en familia" si es Infantil o empieza antes de las 19:00.
  *  Los eventos sin hora conocida (hour === "") quedan fuera salvo que sean
  *  Infantil: sin hora no podemos prometer que sea pronto. */
 export function isFamilyFriendly(ev: LaEvent): boolean {
   if (ev.genres.includes("Infantil")) return true;
-  return ev.hour !== "" && ev.hour < "20:00";
+  return ev.hour !== "" && ev.hour < "19:00";
 }
 
 /** Filtro por género (unión dentro de la sección): sin selección pasa todo;

@@ -250,7 +250,7 @@ export function FiltersOverlay({ initial, events, onApply, onClose }: Props) {
             ))}
           </div>
           <p className="mt-3 text-[13px] leading-relaxed text-muted">
-            «En familia» son los eventos que empiezan antes de las 20:00, más todos
+            «En familia» son los eventos que empiezan antes de las 19:00, más todos
             los de género «Infantil» aunque empiecen más tarde.
           </p>
         </div>
