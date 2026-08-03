@@ -21,24 +21,22 @@ Umami y consenso habitual; no es asesoría legal formal.)
 Umami es una app aparte (Node + Postgres) que recibe los datos; la web solo
 carga su script.
 
-- **Umami Cloud** (plan gratuito, región EU) → para empezar mientras la web
-  está en Vercel. **Fase actual.**
-- **Self-host** (gratis) → en el VPS de Dinahosting cuando se migre. Node +
-  Postgres (podría apoyarse en una base propia o incluso Supabase).
+- **Umami Cloud** (plan gratuito, región EU). **Fase actual.**
+- Se podría autoalojar en el futuro (Node + Postgres) si hiciera falta; sería
+  solo cambiar `NEXT_PUBLIC_UMAMI_SRC` y el website ID.
 
-Migrar de instancia es solo cambiar `NEXT_PUBLIC_UMAMI_SRC` y el website ID.
-
-## Dominio y migración (decidido)
-- La web se moverá de un dominio Vercel a **latira.org**, y más adelante de
-  Vercel a **Dinahosting**.
+## Dominio (decidido)
+- La web **se queda alojada en Vercel** (no hace falta hosting propio; Vercel es
+  de los creadores de Next.js). Lo único que cambia es la dirección: se apunta el
+  dominio propio **`latira.org` (apex, canónico)** al proyecto de Vercel.
 - Los datos de Umami se identifican por el **WEBSITE ID**, no por el dominio.
-  Usar **UN solo website** en Umami y **conservar su ID** en todos los cambios
-  de dominio. Al migrar solo se edita el **campo dominio** del sitio en el panel
-  de Umami; **nunca se crea un website nuevo** (se perdería el histórico).
-- Si se activa restricción por dominio (`data-domains`), añadir `latira.org`
-  (y el dominio Vercel mientras siga vivo) a los permitidos.
-- ⚠️ Next con SSR necesita **Node.js** en destino: confirmar que el plan de
-  Dinahosting lo soporta antes de migrar.
+  Usar **UN solo website** en Umami y **conservar su ID** si algún día cambia el
+  dominio. Solo se edita el **campo dominio** del sitio en el panel de Umami;
+  **nunca se crea un website nuevo** (se perdería el histórico).
+- `data-domains` se deja **sin poner**, así que Umami mide en cualquier host
+  (conviven el `.vercel.app` y `latira.org` sin problema).
+
+Ver el paso a paso al final: **Runbook: migración de dominio a latira.org**.
 
 ---
 
@@ -217,9 +215,45 @@ producción.
 - [ ] Verificar en Network que los page views se registran al navegar (home →
       ficha/modal y atrás).
 
-## Nota de migración (contexto, no es tarea de esta fase)
-- Al migrar el dominio: editar el campo dominio del **mismo** website en Umami
-  (no crear uno nuevo), actualizar `data-domains` y `NEXT_PUBLIC_SITE_URL`
-  (lib/seo.ts). El website ID no cambia.
-- Mientras esté en Vercel, valorar redirecciones `www → apex` + forzar HTTPS en
-  `next.config.ts` (`async redirects()`), independiente de los analytics.
+---
+
+## Runbook: migración de dominio a latira.org
+
+La web **se queda en Vercel**. Solo se apunta el dominio propio. Dominio
+canónico elegido: **`latira.org` (apex)**; `www.latira.org` redirige a él.
+
+El código ya está preparado: la base URL es una única variable
+(`NEXT_PUBLIC_SITE_URL`, ver `lib/seo.ts`) y no hay nada atado a un dominio en
+`next.config.ts`. Vercel se encarga de HTTPS y de la redirección www↔apex.
+
+### 1. Vercel — añadir el dominio (panel)
+- Project → **Settings → Domains** → añadir `latira.org` y `www.latira.org`.
+- Marcar **`latira.org` como principal** (Vercel configurará `www` → apex, 308).
+
+### 2. DNS — en el registrador de latira.org (panel)
+Copiar los registros **exactos** que muestre Vercel. Normalmente:
+- **apex `latira.org`**: registro **A → `76.76.21.21`** (IP anycast de Vercel).
+- **`www`**: registro **CNAME → `cname.vercel-dns.com`**.
+- Esperar propagación DNS; Vercel emite el **SSL** solo.
+
+### 3. Env — base URL del sitio (Vercel, Production)
+- Añadir `NEXT_PUBLIC_SITE_URL=https://latira.org`.
+- **Redeploy** (los cambios de env solo aplican en un despliegue nuevo).
+- Con esto se activan canonical, sitemap, robots y og:url apuntando al dominio
+  real (hoy, sin esa variable, no se emiten).
+
+### 4. Analytics (Umami)
+- No hay cambios de código: `data-domains` está sin poner, mide en cualquier host.
+- En el panel de Umami, editar el **campo dominio** del sitio a `latira.org`
+  (mismo **website ID**, no crear uno nuevo).
+
+### 5. Comprobar
+- [ ] `https://latira.org` carga la web con candado (HTTPS).
+- [ ] `https://www.latira.org` redirige a `https://latira.org`.
+- [ ] `https://latira.org/robots.txt` y `/sitemap.xml` traen URLs con el dominio nuevo.
+- [ ] (Cuando Umami esté activo) las visitas siguen entrando en el mismo website.
+
+### Notas
+- El dominio viejo `*.vercel.app` **sigue vivo** en paralelo; Vercel no lo
+  redirige solo. Se puede dejar así.
+- No hace falta tocar `next.config.ts`: Vercel cubre HTTPS y www↔apex.
