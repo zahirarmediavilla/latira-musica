@@ -1,17 +1,19 @@
 import type { DayGroup, LaEvent, Zone } from "./types";
 import { zoneForEvent } from "./zones";
+import { eventMatchesGenres } from "./genres";
 import { norm } from "./text";
 
 export type DateChip = "finde" | "semana" | "mes";
 
 export interface Filters {
   zones: Zone[];
+  genres: string[]; // group labels + "En familia" (ver lib/genres.ts)
   from: string | null; // YYYY-MM-DD inclusive
   to: string | null; // YYYY-MM-DD inclusive
   chip: DateChip | null;
 }
 
-export const emptyFilters: Filters = { zones: [], from: null, to: null, chip: null };
+export const emptyFilters: Filters = { zones: [], genres: [], from: null, to: null, chip: null };
 
 export function ymd(d: Date): string {
   const y = d.getFullYear();
@@ -47,11 +49,11 @@ export function rangeForChip(chip: DateChip): { from: string; to: string } {
 }
 
 export function filtersActive(f: Filters): boolean {
-  return f.zones.length > 0 || f.from !== null || f.to !== null;
+  return f.zones.length > 0 || f.genres.length > 0 || f.from !== null || f.to !== null;
 }
 
 export function countActive(f: Filters): number {
-  return f.zones.length + (f.from || f.to ? 1 : 0);
+  return f.zones.length + f.genres.length + (f.from || f.to ? 1 : 0);
 }
 
 /** Apply zone + date-range filters and a free-text query (name/artists).
@@ -74,6 +76,7 @@ export function applyFilters(
       const z = zoneForEvent(ev);
       if (!z || !zoneSet.has(z)) return false;
     }
+    if (!eventMatchesGenres(ev, f.genres)) return false;
     if (q) {
       const hay = norm(`${ev.name} ${ev.artists}`);
       if (!hay.includes(q)) return false;

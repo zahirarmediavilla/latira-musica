@@ -40,20 +40,24 @@ export const ZONES = [
 
 export type Zone = (typeof ZONES)[number];
 
-// Display label + sample municipios shown under each zone in the filter list.
-export const ZONE_META: Record<Zone, { label: string; sub?: string }> = {
+// Display label + sample municipios + short chip label. `chip` is the short
+// name shown in the filter chips (falls back to `label`); the internal Zone
+// value is unchanged, so zone→municipio matching keeps working.
+export const ZONE_META: Record<Zone, { label: string; sub?: string; chip?: string }> = {
   Gijón: { label: "Gijón" },
   Oviedo: { label: "Oviedo" },
   "Avilés y comarca": { label: "Avilés y comarca", sub: "Castrillón, Carreño, Gozón…" },
-  "Cuenca del Caudal": { label: "Cuenca del Caudal", sub: "Mieres, Aller, Lena" },
+  "Cuenca del Caudal": { label: "Cuenca del Caudal", sub: "Mieres, Aller, Lena", chip: "Caudal" },
   "Cuenca del Nalón": {
     label: "Cuenca del Nalón",
     sub: "Langreo, SMRA, Laviana, Sobrescobio, Caso",
+    chip: "Nalón",
   },
-  "Área central": { label: "Área central", sub: "Siero, Llanera, Noreña…" },
+  "Área central": { label: "Área central", sub: "Siero, Llanera, Noreña…", chip: "Centro" },
   "Montaña central": {
     label: "Montaña central",
     sub: "Quirós, Teverga, Riosa, Morcín…",
+    chip: "Montaña",
   },
   "Oriente de Asturias": {
     label: "Oriente",
@@ -64,6 +68,12 @@ export const ZONE_META: Record<Zone, { label: string; sub?: string }> = {
     sub: "Navia, Valdés, Cangas del Narcea…",
   },
 };
+
+/** Short label shown in a zone filter chip / removable tag. */
+export function zoneChipLabel(z: Zone): string {
+  const m = ZONE_META[z];
+  return m.chip ?? m.label;
+}
 
 // A day's worth of events, for the grouped Home list.
 export interface DayGroup {

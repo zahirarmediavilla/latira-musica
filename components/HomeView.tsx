@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { LaEvent } from "@/lib/types";
+import { zoneChipLabel, type LaEvent } from "@/lib/types";
 import {
   type Filters,
   applyFilters,
@@ -85,9 +85,18 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           {filters.zones.map((z) => (
             <RemovableTag
               key={z}
-              label={z}
+              label={zoneChipLabel(z)}
               onRemove={() =>
                 setFilters((f) => ({ ...f, zones: f.zones.filter((x) => x !== z) }))
+              }
+            />
+          ))}
+          {filters.genres.map((g) => (
+            <RemovableTag
+              key={g}
+              label={g}
+              onRemove={() =>
+                setFilters((f) => ({ ...f, genres: f.genres.filter((x) => x !== g) }))
               }
             />
           ))}
@@ -121,6 +130,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       {filterOpen && (
         <FiltersOverlay
           initial={filters}
+          events={events}
           onApply={(f) => {
             setFilters(f);
             setFilterOpen(false);

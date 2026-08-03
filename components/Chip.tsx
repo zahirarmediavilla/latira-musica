@@ -17,7 +17,7 @@ export function Chip({
       type="button"
       onClick={onClick}
       className={
-        "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors " +
+        "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition active:scale-95 " +
         (selected
           ? "border-yellow bg-yellow text-ink"
           : "border-line text-ink hover:border-ink/40")
