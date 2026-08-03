@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { zoneChipLabel, type LaEvent } from "@/lib/types";
 import {
   type Filters,
@@ -10,6 +10,7 @@ import {
   filtersActive,
   groupByDay,
 } from "@/lib/filtering";
+import { track, AnalyticsEvent } from "@/lib/analytics";
 import { dayNumber, monthAbbr } from "@/lib/format";
 import { HEADER_H, HEADER_WITH_FILTERS } from "@/lib/layout";
 import { Header } from "./Header";
@@ -32,6 +33,18 @@ function dateFilterLabel(f: Filters): string | null {
   }
   if (f.from) return `${dayNumber(f.from)} ${monthAbbr(f.from)}`;
   return null;
+}
+
+// Foto de los filtros aplicados para el evento `aplicar-filtros` / `filtros-sin-resultados`.
+function filtersData(f: Filters) {
+  return {
+    fecha:
+      f.chip ??
+      (f.from ? (f.to && f.to !== f.from ? "rango" : "dia") : "cualquiera"),
+    zonas: f.zones.join(", ") || "ninguna",
+    generos: f.genres.join(", ") || "ninguno",
+    n_filtros: countActive(f),
+  };
 }
 
 // Filters persist while navigating to a detail and back (within the session).
@@ -57,14 +70,39 @@ export function HomeView({ events }: { events: LaEvent[] }) {
   const groups = useMemo(() => groupByDay(filtered), [filtered]);
   const dateLabel = dateFilterLabel(filters);
 
+  // `buscar` con debounce: el buscador filtra en vivo, así que registramos el
+  // término ya "asentado" (al parar de teclear ~0,8 s), no cada tecla. El nº de
+  // resultados se lee de un ref sincronizado (no se puede tocar en render).
+  const filteredLenRef = useRef(filtered.length);
+  useEffect(() => {
+    filteredLenRef.current = filtered.length;
+  }, [filtered]);
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) return;
+    const t = window.setTimeout(() => {
+      const resultados = filteredLenRef.current;
+      track(AnalyticsEvent.buscar, { query: q, resultados });
+      if (resultados === 0)
+        track(AnalyticsEvent.busquedaSinResultados, { query: q });
+    }, 800);
+    return () => window.clearTimeout(t);
+  }, [query]);
+
   return (
     <>
       <Header
         query={query}
         onQueryChange={setQuery}
         onClearSearch={() => setQuery("")}
-        onFilter={() => setFilterOpen(true)}
-        onMenu={() => setMenuOpen(true)}
+        onFilter={() => {
+          setFilterOpen(true);
+          track(AnalyticsEvent.abrirFiltros);
+        }}
+        onMenu={() => {
+          setMenuOpen(true);
+          track(AnalyticsEvent.abrirMenu);
+        }}
         resultCount={searching ? filtered.length : null}
         filterCount={countActive(filters)}
       />
@@ -77,27 +115,30 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           {dateLabel && (
             <RemovableTag
               label={dateLabel}
-              onRemove={() =>
-                setFilters((f) => ({ ...f, chip: null, from: null, to: null }))
-              }
+              onRemove={() => {
+                setFilters((f) => ({ ...f, chip: null, from: null, to: null }));
+                track(AnalyticsEvent.quitarFiltro, { tipo: "fecha" });
+              }}
             />
           )}
           {filters.zones.map((z) => (
             <RemovableTag
               key={z}
               label={zoneChipLabel(z)}
-              onRemove={() =>
-                setFilters((f) => ({ ...f, zones: f.zones.filter((x) => x !== z) }))
-              }
+              onRemove={() => {
+                setFilters((f) => ({ ...f, zones: f.zones.filter((x) => x !== z) }));
+                track(AnalyticsEvent.quitarFiltro, { tipo: "zona" });
+              }}
             />
           ))}
           {filters.genres.map((g) => (
             <RemovableTag
               key={g}
               label={g}
-              onRemove={() =>
-                setFilters((f) => ({ ...f, genres: f.genres.filter((x) => x !== g) }))
-              }
+              onRemove={() => {
+                setFilters((f) => ({ ...f, genres: f.genres.filter((x) => x !== g) }));
+                track(AnalyticsEvent.quitarFiltro, { tipo: "genero" });
+              }}
             />
           ))}
         </div>
@@ -113,7 +154,10 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           {filtersActive(filters) && !searching && (
             <button
               type="button"
-              onClick={() => setFilters(emptyFilters)}
+              onClick={() => {
+                setFilters(emptyFilters);
+                track(AnalyticsEvent.quitarTodosFiltros);
+              }}
               className="mt-4 text-sm font-semibold text-blue"
             >
               Quitar filtros
@@ -136,6 +180,28 @@ export function HomeView({ events }: { events: LaEvent[] }) {
             setFilterOpen(false);
             // Show the freshly filtered list from the top, not at the old scroll.
             window.scrollTo(0, 0);
+            const d = filtersData(f);
+            track(AnalyticsEvent.aplicarFiltros, d);
+            // Popularidad por filtro individual: un evento por valor activo, para
+            // que Umami los pueda rankear (los strings combinados de
+            // `aplicar-filtros` no se ordenan por zona/género suelto).
+            f.zones.forEach((z) =>
+              track(AnalyticsEvent.usarFiltro, { tipo: "zona", valor: z }),
+            );
+            f.genres.forEach((g) =>
+              track(AnalyticsEvent.usarFiltro, { tipo: "genero", valor: g }),
+            );
+            if (d.fecha !== "cualquiera")
+              track(AnalyticsEvent.usarFiltro, { tipo: "fecha", valor: d.fecha });
+            // Combinación de filtros que deja la agenda vacía (respetando la
+            // búsqueda activa, igual que la lista visible).
+            if (filtersActive(f) && applyFilters(events, f, query).length === 0) {
+              track(AnalyticsEvent.filtrosSinResultados, {
+                fecha: d.fecha,
+                zonas: d.zonas,
+                generos: d.generos,
+              });
+            }
           }}
           onClose={() => setFilterOpen(false)}
         />
@@ -161,7 +227,11 @@ export function HomeView({ events }: { events: LaEvent[] }) {
             <p>
               Si quieres saber más sobre el proyecto, comentarnos cualquier cosa,
               o incluir eventos en la lista, puedes escribir a{" "}
-              <a href="mailto:hola@latira.org" className="font-medium underline">
+              <a
+                href="mailto:hola@latira.org"
+                className="font-medium underline"
+                onClick={() => track(AnalyticsEvent.clicContactoEmail)}
+              >
                 hola@latira.org
               </a>
             </p>

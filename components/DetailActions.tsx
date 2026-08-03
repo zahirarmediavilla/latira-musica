@@ -1,6 +1,7 @@
 "use client";
 
 import { PrimaryButton } from "./Button";
+import { track, AnalyticsEvent } from "@/lib/analytics";
 
 export interface DetailActionData {
   id: string;
@@ -15,7 +16,15 @@ export interface DetailActionData {
 // The safe-area padding keeps the CTA above the iPhone home indicator.
 export function DetailActions({ data }: { data: DetailActionData }) {
   async function share() {
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    track(AnalyticsEvent.clicCompartir, { id: data.id, name: data.name });
+    // utm_source=share: cuando quien recibe el enlace abra la ficha, Umami
+    // atribuye la visita al canal "compartido" (si no, sería tráfico directo).
+    let url = "";
+    if (typeof window !== "undefined") {
+      const u = new URL(window.location.href);
+      u.searchParams.set("utm_source", "share");
+      url = u.toString();
+    }
     try {
       if (navigator.share) {
         // El enlace va DENTRO del texto a propósito: WhatsApp (y otros chats)
@@ -46,6 +55,12 @@ export function DetailActions({ data }: { data: DetailActionData }) {
             `download` attr — on iOS it would divert the file to Files instead. */}
         <a
           href={`/event/${data.id}/calendar`}
+          onClick={() =>
+            track(AnalyticsEvent.clicAnadirCalendario, {
+              id: data.id,
+              name: data.name,
+            })
+          }
           className="flex items-center justify-center rounded-full py-4 text-[15px] font-medium uppercase tracking-[0.06em] text-muted transition-colors hover:text-blue"
         >
           Añadir a calendario
@@ -62,7 +77,16 @@ export function DetailActions({ data }: { data: DetailActionData }) {
       </div>
 
       {hasTicket ? (
-        <PrimaryButton href={data.ticketUrl} external>
+        <PrimaryButton
+          href={data.ticketUrl}
+          external
+          onClick={() =>
+            track(AnalyticsEvent.clicComprarEntrada, {
+              id: data.id,
+              name: data.name,
+            })
+          }
+        >
           Comprar entradas
         </PrimaryButton>
       ) : (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import {
   HOME_DESCRIPTION,
@@ -48,6 +49,20 @@ export default function RootLayout({
       <body className="min-h-dvh bg-bg text-ink font-sans antialiased">
         {children}
         {modal}
+        {/* Umami (analytics privacy-first, sin cookies → sin banner). Solo se
+            carga si hay website ID configurado, así que en local o donde no
+            estén las variables no envía nada. `afterInteractive` es el estándar
+            para analytics; el tracker capta también las navegaciones cliente del
+            App Router (pushState). Al migrar a latira.org, restringir a los
+            dominios vivos añadiendo p. ej. data-domains="latira.org" (NO ahora:
+            cortaría la medición en el dominio Vercel actual). */}
+        {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+          <Script
+            src={process.env.NEXT_PUBLIC_UMAMI_SRC}
+            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );

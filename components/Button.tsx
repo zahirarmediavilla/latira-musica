@@ -33,6 +33,7 @@ export function PrimaryButton({
     return (
       <a
         href={href}
+        onClick={onClick}
         className={PRIMARY}
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       >

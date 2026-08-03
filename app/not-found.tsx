@@ -1,4 +1,6 @@
 import { PrimaryButton } from "@/components/Button";
+import { TrackView } from "@/components/TrackView";
+import { AnalyticsEvent } from "@/lib/analytics";
 
 // Shown when notFound() is called (e.g. an event id that doesn't exist) or for
 // any unmatched route. Branded replacement for Next's default 404 screen.
@@ -6,6 +8,7 @@ import { PrimaryButton } from "@/components/Button";
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-8 text-center">
+      <TrackView event={AnalyticsEvent.paginaNoEncontrada} />
       <h2 className="font-display text-[28px] font-bold leading-[1.05] text-ink">
         No encontramos esto
       </h2>

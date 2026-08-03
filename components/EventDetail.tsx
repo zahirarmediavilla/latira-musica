@@ -1,5 +1,6 @@
 import { formatMediumDate } from "@/lib/format";
 import type { LaEvent } from "@/lib/types";
+import { AnalyticsEvent } from "@/lib/analytics";
 import { BackHeader } from "./BackHeader";
 import { ExternalIcon } from "./icons";
 
@@ -80,6 +81,9 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted underline"
+                    data-umami-event={AnalyticsEvent.clicUbicacionMapa}
+                    data-umami-event-id={ev.id}
+                    data-umami-event-venue={ev.venue.name}
                   >
                     {ev.venue.name}
                   </a>
@@ -123,6 +127,8 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center gap-1 text-blue"
+              data-umami-event={AnalyticsEvent.clicVerVideoAudio}
+              data-umami-event-id={ev.id}
             >
               Ver vídeo / audio <ExternalIcon className="h-4 w-4" />
             </a>
@@ -137,6 +143,9 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
               target="_blank"
               rel="noopener noreferrer"
               className="block pb-8 text-[15px] text-muted"
+              data-umami-event={AnalyticsEvent.clicVistoEn}
+              data-umami-event-id={ev.id}
+              data-umami-event-host={sourceHost}
             >
               Visto en <span className="underline">{sourceHost}</span>
             </a>

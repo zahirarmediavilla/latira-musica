@@ -4,6 +4,8 @@ import { getEventById } from "@/lib/events";
 import { EventDetail } from "@/components/EventDetail";
 import { DetailActions } from "@/components/DetailActions";
 import { EventJsonLd } from "@/components/JsonLd";
+import { TrackView } from "@/components/TrackView";
+import { AnalyticsEvent } from "@/lib/analytics";
 import {
   SITE_NAME,
   canonicalFor,
@@ -56,6 +58,11 @@ export default async function EventPage({
     // scrollable into view on any device, with no padding/safe-area math.
     <div className="fixed inset-0 overflow-hidden">
       <EventJsonLd event={ev} />
+      {/* Carga directa (deep link, SEO, enlace compartido) → origen "directo". */}
+      <TrackView
+        event={AnalyticsEvent.verFichaEvento}
+        data={{ id: ev.id, name: ev.name, origen: "directo" }}
+      />
       <div className="mx-auto flex h-full w-full max-w-[480px] flex-col">
         <div className="detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain bg-bg">
           <EventDetail event={ev} />

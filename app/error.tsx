@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { PrimaryButton } from "@/components/Button";
+import { track, AnalyticsEvent } from "@/lib/analytics";
 
 // Catches runtime errors thrown while rendering the home segment and its
 // children (e.g. the Supabase read in lib/events.ts failing). Does NOT wrap the
@@ -17,6 +18,7 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error);
+    track(AnalyticsEvent.errorApp);
   }, [error]);
 
   return (
