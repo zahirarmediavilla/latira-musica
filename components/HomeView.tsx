@@ -57,6 +57,8 @@ export function HomeView({ events }: { events: LaEvent[] }) {
   const [filters, setFilters] = useState<Filters>(persistedFilters);
   const [filterOpen, setFilterOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // El buscador va oculto por defecto; se despliega desde la lupa.
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     persistedFilters = filters;
@@ -94,12 +96,20 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       <Header
         query={query}
         onQueryChange={setQuery}
-        onClearSearch={() => setQuery("")}
+        searchOpen={searchOpen}
+        onToggleSearch={() => {
+          if (searchOpen) {
+            setSearchOpen(false);
+            setQuery(""); // al cerrar, se limpia la búsqueda
+          } else {
+            setSearchOpen(true);
+          }
+        }}
         onFilter={() => {
           setFilterOpen(true);
           track(AnalyticsEvent.abrirFiltros);
         }}
-        onMenu={() => {
+        onInfo={() => {
           setMenuOpen(true);
           track(AnalyticsEvent.abrirMenu);
         }}
@@ -107,7 +117,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
         filterCount={countActive(filters)}
       />
 
-      {filtersActive(filters) && (
+      {filtersActive(filters) && !searchOpen && (
         <div
           className="no-scrollbar sticky z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-2"
           style={{ top: HEADER_H }}
@@ -144,7 +154,13 @@ export function HomeView({ events }: { events: LaEvent[] }) {
         </div>
       )}
 
-      {groups.length === 0 ? (
+      {searchOpen && !searching ? (
+        // Buscador desplegado y vacío: apoyo en lugar del listado (mismo estilo
+        // que No-resultados).
+        <div className="px-8 pt-20 text-center">
+          <p className="text-lg text-muted">Busca por eventos o artistas</p>
+        </div>
+      ) : groups.length === 0 ? (
         <div className="px-8 pt-20 text-center">
           <p className="text-lg text-muted">
             {searching
@@ -167,7 +183,11 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       ) : (
         <EventList
           groups={groups}
-          dateTop={filtersActive(filters) ? HEADER_WITH_FILTERS : HEADER_H}
+          dateTop={
+            filtersActive(filters) && !searchOpen
+              ? HEADER_WITH_FILTERS
+              : HEADER_H
+          }
         />
       )}
 

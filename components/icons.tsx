@@ -71,6 +71,17 @@ export function MenuIcon({ className = base }: P) {
   );
 }
 
+// Info (i dentro de un círculo). Sustituye al menú de hamburguesa en el header.
+// Glifo exacto del diseño (Header_default.svg): el viewBox está desplazado a la
+// región del icono en el artboard, así que el path se usa tal cual, sin recalcular.
+export function InfoIcon({ className = base }: P) {
+  return (
+    <svg className={className} viewBox="240.055 53.2263 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M260.805 65.2263C260.805 60.3938 256.887 56.4763 252.055 56.4763C247.222 56.4763 243.305 60.3938 243.305 65.2263C243.305 70.0587 247.222 73.9763 252.055 73.9763C256.887 73.9763 260.805 70.0587 260.805 65.2263ZM250.805 69.2263V65.2263C250.805 64.5359 251.364 63.9763 252.055 63.9763C252.745 63.9763 253.305 64.5359 253.305 65.2263V69.2263C253.305 69.9166 252.745 70.4763 252.055 70.4763C251.364 70.4763 250.805 69.9166 250.805 69.2263ZM252.064 59.9763C252.755 59.9763 253.314 60.5359 253.314 61.2263C253.314 61.9166 252.755 62.4763 252.064 62.4763H252.055C251.364 62.4763 250.805 61.9166 250.805 61.2263C250.805 60.5359 251.364 59.9763 252.055 59.9763H252.064ZM263.305 65.2263C263.305 71.4395 258.268 76.4763 252.055 76.4763C245.841 76.4763 240.805 71.4395 240.805 65.2263C240.805 59.0131 245.841 53.9763 252.055 53.9763C258.268 53.9763 263.305 59.0131 263.305 65.2263Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 // Vertical sliders / tune icon used for the filter action.
 export function SlidersIcon({ className = base }: P) {
   return (
