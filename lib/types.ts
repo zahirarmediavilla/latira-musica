@@ -57,7 +57,6 @@ export const ZONE_META: Record<Zone, { label: string; sub?: string; chip?: strin
   "Montaña central": {
     label: "Montaña central",
     sub: "Quirós, Teverga, Riosa, Morcín…",
-    chip: "Montaña",
   },
   "Oriente de Asturias": {
     label: "Oriente",
