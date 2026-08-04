@@ -20,12 +20,14 @@ const inter = Inter({
 // metadataBase only once a base URL is configured (lib/seo.ts) — it stays
 // undefined otherwise so no absolute URLs are guessed.
 const base = siteUrl();
-const HOME_TITLE_FULL = `${HOME_TITLE} | ${SITE_NAME}`;
+const HOME_TITLE_FULL = `${SITE_NAME} | ${HOME_TITLE}`;
 
 export const metadata: Metadata = {
   ...(base ? { metadataBase: new URL(base) } : {}),
-  // The "| LaTira" suffix lives ONLY here: child pages set a bare title and the
-  // template appends the brand.
+  // Home lleva la marca delante ("LaTira | …") por pedirlo así la pestaña; el
+  // keyword sigue en el título, que es lo que cuenta para SEO en portada.
+  // Las páginas hijas van al revés ("%s | LaTira"): el nombre único primero y la
+  // marca de sufijo, que es la práctica SEO para páginas interiores.
   title: {
     default: HOME_TITLE_FULL,
     template: `%s | ${SITE_NAME}`,

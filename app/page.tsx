@@ -21,7 +21,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   alternates: canonicalFor("/"),
   openGraph: openGraphFor({
-    title: `${HOME_TITLE} | ${SITE_NAME}`,
+    // Marca delante en portada, igual que el <title> (ver app/layout.tsx).
+    title: `${SITE_NAME} | ${HOME_TITLE}`,
     description: HOME_DESCRIPTION,
     path: "/",
   }),
