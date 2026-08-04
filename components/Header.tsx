@@ -14,8 +14,9 @@ interface HeaderProps {
   filterCount: number; // filtros activos (zonas + fecha + géneros)
 }
 
-// Muelle compartido: barra azul y morphs usan el mismo gesto para crecer/volver.
-const SPRING = "cubic-bezier(0.34, 1.4, 0.5, 1)";
+// Muelle compartido: barra azul, morphs y la tira de filtros usan el mismo
+// gesto para crecer/volver.
+export const SPRING = "cubic-bezier(0.34, 1.4, 0.5, 1)";
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 export function Header({

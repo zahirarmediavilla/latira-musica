@@ -12,8 +12,8 @@ import {
 } from "@/lib/filtering";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { dayNumber, monthAbbr } from "@/lib/format";
-import { HEADER_H, HEADER_WITH_FILTERS } from "@/lib/layout";
-import { Header } from "./Header";
+import { FILTER_ROW_H, HEADER_H, HEADER_WITH_FILTERS } from "@/lib/layout";
+import { Header, SPRING } from "./Header";
 import { EventList } from "./EventList";
 import { RemovableTag } from "./Chip";
 import { FiltersOverlay } from "./FiltersOverlay";
@@ -70,7 +70,17 @@ export function HomeView({ events }: { events: LaEvent[] }) {
     [events, filters, query],
   );
   const groups = useMemo(() => groupByDay(filtered), [filtered]);
-  const dateLabel = dateFilterLabel(filters);
+
+  // La tira azul de filtros crece/decrece con muelle (mismo gesto que la barra
+  // de búsqueda), así que no se monta/desmonta: siempre está y anima su altura.
+  const showFilters = filtersActive(filters) && !searchOpen;
+  // Guardamos los últimos filtros activos para que los chips no desaparezcan de
+  // golpe mientras la tira se recoge (patrón de estado derivado, como el
+  // `lastCount` de la barra azul del Header).
+  const [lastFilters, setLastFilters] = useState(filters);
+  if (showFilters && filters !== lastFilters) setLastFilters(filters);
+  const stripFilters = showFilters ? filters : lastFilters;
+  const dateLabel = dateFilterLabel(stripFilters);
 
   // `buscar` con debounce: el buscador filtra en vivo, así que registramos el
   // término ya "asentado" (al parar de teclear ~0,8 s), no cada tecla. El nº de
@@ -117,11 +127,20 @@ export function HomeView({ events }: { events: LaEvent[] }) {
         filterCount={countActive(filters)}
       />
 
-      {filtersActive(filters) && !searchOpen && (
-        <div
-          className="no-scrollbar sticky z-20 flex gap-2 overflow-x-auto bg-blue px-5 pb-4 pt-2"
-          style={{ top: HEADER_H }}
-        >
+      {/* Tira azul de filtros: crece hasta FILTER_ROW_H con muelle al aplicar
+          filtros y vuelve sola al vaciarse. Un único elemento (no un
+          intercambio) para que la altura anime, igual que la barra de búsqueda
+          del Header. */}
+      <div
+        className="sticky z-20 overflow-hidden bg-blue"
+        style={{
+          top: HEADER_H,
+          height: showFilters ? FILTER_ROW_H : 0,
+          transition: `height 420ms ${SPRING}`,
+        }}
+        aria-hidden={!showFilters}
+      >
+        <div className="no-scrollbar flex gap-2 overflow-x-auto px-5 pb-4 pt-2">
           {dateLabel && (
             <RemovableTag
               label={dateLabel}
@@ -131,7 +150,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
               }}
             />
           )}
-          {filters.zones.map((z) => (
+          {stripFilters.zones.map((z) => (
             <RemovableTag
               key={z}
               label={zoneChipLabel(z)}
@@ -141,7 +160,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
               }}
             />
           ))}
-          {filters.genres.map((g) => (
+          {stripFilters.genres.map((g) => (
             <RemovableTag
               key={g}
               label={g}
@@ -152,7 +171,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
             />
           ))}
         </div>
-      )}
+      </div>
 
       {searchOpen && !searching ? (
         // Buscador desplegado y vacío: apoyo en lugar del listado (mismo estilo
@@ -183,11 +202,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       ) : (
         <EventList
           groups={groups}
-          dateTop={
-            filtersActive(filters) && !searchOpen
-              ? HEADER_WITH_FILTERS
-              : HEADER_H
-          }
+          dateTop={showFilters ? HEADER_WITH_FILTERS : HEADER_H}
         />
       )}
 
