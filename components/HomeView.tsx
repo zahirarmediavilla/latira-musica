@@ -248,11 +248,11 @@ export function HomeView({ events }: { events: LaEvent[] }) {
               Si quieres saber más sobre el proyecto, comentarnos cualquier cosa,
               o incluir eventos en la lista, puedes escribir a{" "}
               <a
-                href="mailto:info@latira.org"
+                href="mailto:hola@latira.org"
                 className="font-medium underline"
                 onClick={() => track(AnalyticsEvent.clicContactoEmail)}
               >
-                info@latira.org
+                hola@latira.org
               </a>
             </p>
           </div>
