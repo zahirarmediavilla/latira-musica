@@ -60,7 +60,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           <p className="mt-3 text-[20px] font-bold leading-snug text-ink">{ev.artists}</p>
         )}
 
-        <p className="mt-4 mb-3 text-[18px] font-bold capitalize text-muted">
+        <p className="mt-4 text-[18px] font-bold capitalize text-muted">
           {formatMediumDate(ev.date)}
           {ev.hour && <span> · {ev.hour}</span>}
         </p>
@@ -96,17 +96,13 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
             )}
           </p>
         )}
-        {ev.venue?.address && (
-          <p className="mt-1 text-[16px] text-muted">{ev.venue.address}</p>
-        )}
-
-        <hr className="my-6 border-[#b8b8b8]" />
-
         {(ev.free || ev.price) && (
-          <p className="text-[18px] font-bold text-muted">
+          <p className="mt-1 text-[18px] font-bold text-muted">
             {ev.free ? "Gratis" : ev.price}
           </p>
         )}
+
+        <hr className="my-6 border-[#b8b8b8]" />
 
         {ev.description && (
           <p className="whitespace-pre-line break-words py-6 text-[16px] leading-relaxed text-muted">

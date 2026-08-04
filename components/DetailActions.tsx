@@ -43,7 +43,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
   const hasTicket = Boolean(data.ticketUrl);
 
   return (
-    <div className="shrink-0 border-t border-muted bg-bg px-5 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+    <div className="shrink-0 border-t border-muted bg-bg px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div
         className={
           "mb-2 flex " + (hasTicket ? "justify-between" : "justify-center")
