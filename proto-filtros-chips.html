@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proto · Filtros con chips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Vremena Grotesk: mismas fuentes self-hosted que globals.css (sirven desde /public) */
+  @font-face{font-family:"Vremena Grotesk";
+    src:url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_regular_macroman/vremenagrotesk-webfont.woff2") format("woff2"),
+        url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_regular_macroman/vremenagrotesk-webfont.woff") format("woff");
+    font-weight:400; font-style:normal; font-display:swap;}
+  @font-face{font-family:"Vremena Grotesk";
+    src:url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_medium_macroman/vremenagroteskmedium-webfont.woff2") format("woff2"),
+        url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_medium_macroman/vremenagroteskmedium-webfont.woff") format("woff");
+    font-weight:500; font-style:normal; font-display:swap;}
+  @font-face{font-family:"Vremena Grotesk";
+    src:url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff2") format("woff2"),
+        url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff") format("woff");
+    font-weight:700; font-style:normal; font-display:swap;}
+  :root{
+    --bg:#ebebeb; --ink:#1a1a1a; --yellow:#ffcc00; --blue:#0076dd;
+    --muted:#545454; --line:#cacaca; --canvas:#d4d4d4; --range:#cccccc;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; background:var(--canvas);
+    font-family:Inter,ui-sans-serif,system-ui,sans-serif; color:var(--ink);
+  }
+  /* Página de fondo con el disparador (simula la home) */
+  .page{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px}
+  .launcher{
+    display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer;
+    background:var(--ink); color:#fff; font-size:15px; font-weight:500;
+    border-radius:999px; padding:14px 22px;
+  }
+  .launcher svg{width:20px; height:20px; fill:currentColor}
+
+  /* Backdrop que atenúa el fondo */
+  .backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:40;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .backdrop.open{opacity:1; pointer-events:auto}
+
+  /* Modal bottom-sheet: entra desde abajo, sale hacia abajo */
+  .panel{
+    position:fixed; left:0; right:0; bottom:0; top:auto; margin:0 auto; max-width:480px; z-index:50;
+    max-height:94vh; border-radius:20px 20px 0 0; overflow:hidden;
+    background:var(--bg); display:flex; flex-direction:column;
+    transform:translateY(100%); will-change:transform;
+    transition:transform .3s cubic-bezier(.4,0,1,1); /* plegado: ease-in */
+    box-shadow:0 -8px 30px rgba(0,0,0,.12);
+  }
+  .panel.open{
+    transform:translateY(0);
+    transition:transform .42s cubic-bezier(.22,1,.36,1); /* despliegue: salida suave */
+  }
+  .panel.dragging{transition:none} /* mientras se arrastra sigue el dedo */
+  @media (prefers-reduced-motion:reduce){
+    .panel,.panel.open{transition:none}
+    .backdrop{transition:none}
+  }
+  /* Asa de arrastre (bottom-sheet) */
+  .handle{flex:0 0 auto; display:flex; justify-content:center; padding:10px 0 2px; cursor:grab; touch-action:none}
+  .handle span{width:40px; height:5px; border-radius:999px; background:#c2c2c2}
+  .panel.dragging .handle{cursor:grabbing}
+  /* header: flex items-start justify-between px-5, bajo el asa */
+  header{flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:6px 20px 14px; border-bottom:1px solid transparent; transition:border-color .15s}
+  header.scrolled{border-bottom-color:rgba(184,184,184,.7)} /* hairline al hacer scroll */
+  /* h2: font-display text-3xl font-bold */
+  h2{font-family:"Vremena Grotesk",Inter,sans-serif; font-size:30px; line-height:1.1; font-weight:700; margin:0}
+  /* close: -mr-2 h-11 w-11 rounded-full hover:bg-ink/5 */
+  .close{
+    border:0; background:transparent; width:44px; height:44px; margin-right:-8px;
+    border-radius:999px; color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .close:hover{background:rgba(26,26,26,.05)}
+  .ic24{width:24px; height:24px; fill:currentColor}
+
+  /* body: flex-1 overflow-y-auto px-5 pb-6 pt-7 */
+  .body{flex:1; overflow-y:auto; padding:10px 20px 24px}
+  /* label: text-xs font-semibold uppercase tracking-[0.12em] text-muted */
+  .label{
+    font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin:0;
+  }
+  .label.gap{margin-top:48px} /* 48px entre agrupaciones */
+
+  /* Date field: mt-2 border-b border-line/80 pb-2 text-lg font-medium */
+  .datefield{
+    display:block; width:100%; text-align:left; background:transparent; border:0;
+    border-bottom:1px solid rgba(202,202,202,.8); padding:0 0 8px; margin-top:8px;
+    font-size:18px; font-weight:500; color:var(--muted); cursor:pointer;
+  }
+  .datefield.has-value{color:var(--ink)}
+
+  /* Calendar: rounded-2xl bg-white p-4, mt-3 */
+  .cal{margin-top:12px; background:#fff; border-radius:16px; padding:16px; display:none}
+  .cal.open{display:block}
+  .cal-head{display:flex; align-items:center; margin-bottom:12px} /* mb-3 */
+  .navbtn{border:0; background:transparent; font-size:18px; width:44px; height:44px; color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center}
+  .navbtn.prev{margin-left:-8px}
+  .cal-title{flex:1; text-align:center; font-size:14px; font-weight:600; text-transform:capitalize} /* text-sm font-semibold */
+  /* ok: ml-1 h-9 w-9 rounded-full bg-blue */
+  .okbtn{
+    margin-left:4px; flex:0 0 auto; width:36px; height:36px; border:0; border-radius:999px;
+    background:var(--blue); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .okbtn:hover{background:#0061b8}
+  .ic-check{width:20px; height:20px}
+  /* DOW: grid-cols-7 text-[11px] text-muted, py-1 */
+  .dow{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); text-align:center; font-size:11px; color:var(--muted)}
+  .dow span{padding:4px 0}
+  /* days: grid-cols-7 gap-y-2 text-sm */
+  .days{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); row-gap:8px; text-align:center; font-size:14px}
+  .cell{position:relative; min-width:0; height:40px} /* h-10 */
+  .cell.empty{visibility:hidden}
+  .cell .fill{position:absolute; top:2px; bottom:2px; background:var(--range)} /* inset-y-0.5 */
+  .cell .fill.mid{left:0; right:0}
+  .cell .fill.left{left:0; width:50%}
+  .cell .fill.right{right:0; width:50%}
+  .cell button{position:relative; height:100%; width:100%; border:0; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center}
+  .cell .num{position:relative; height:36px; width:40px; display:flex; align-items:center; justify-content:center; border-radius:999px; color:var(--ink)} /* h-9 w-10 */
+  .cell.edge .num{background:var(--yellow); font-weight:700}
+
+  /* Chip: border px-3.5 py-1.5 text-sm font-medium gap-1.5 rounded-full */
+  .chips{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px} /* mt-4 gap-2.5 */
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+    border:1px solid var(--line); background:transparent; color:var(--ink);
+    border-radius:999px; padding:8px 15px; font-size:14px; font-weight:500;
+    cursor:pointer; transition:border-color .12s, background-color .12s, transform .08s;
+  }
+  .chip:hover{border-color:rgba(26,26,26,.4)}
+  .chip:active{transform:scale(.95)} /* rebote al pulsar */
+  .chip.on{background:var(--yellow); border-color:var(--yellow)}
+  .chip.on:hover{border-color:var(--yellow)}
+  .chip-x{width:14px; height:14px; fill:currentColor; display:none} /* h-3.5 w-3.5, only when selected */
+  .chip.on .chip-x{display:inline-block}
+
+  .hint{margin:12px 0 0; font-size:13px; color:var(--muted); line-height:1.5}
+
+  /* footer: acción secundaria (Limpiar) + botón principal en la misma fila */
+  footer{border-top:1px solid #b8b8b8; padding:14px 20px; display:flex; align-items:center; gap:8px}
+  .secondary{
+    flex:0 0 auto; display:flex; align-items:center; justify-content:center; border:0; background:transparent; cursor:pointer;
+    border-radius:999px; padding:16px 12px; /* py-4 como "Añadir a calendario" */
+    font-size:15px; font-weight:500; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); transition:color .12s;
+  }
+  .secondary:hover{color:var(--blue)} /* mismo hover que la secundaria de la ficha */
+  .apply{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+    border:0; background:var(--blue); color:#fff; font-size:15px; font-weight:500;
+    letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:16px; cursor:pointer;
+    transition:background-color .12s;
+  }
+  .apply:hover{background:#0061b8}
+  .apply:disabled{background:var(--line); color:#8a8a8a; cursor:not-allowed}
+  .apply:disabled:hover{background:var(--line)}
+  .ic-arrow{width:20px; height:20px; fill:currentColor}
+  .note{max-width:480px; margin:0 auto; padding:14px 20px; font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+<!-- SVG sprite: iconos reales de components/icons.tsx -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-close" viewBox="0 0 24 24">
+    <path d="M17.1161 5.11624C17.6043 4.62808 18.3955 4.62808 18.8837 5.11624C19.3719 5.60439 19.3719 6.39566 18.8837 6.88382L13.7675 12L18.8837 17.1162C19.3719 17.6044 19.3719 18.3957 18.8837 18.8838C18.3955 19.372 17.6043 19.372 17.1161 18.8838L11.9999 13.7676L6.88369 18.8838C6.39554 19.372 5.60427 19.372 5.11612 18.8838C4.62796 18.3957 4.62796 17.6044 5.11612 17.1162L10.2323 12L5.11612 6.88382C4.62796 6.39566 4.62796 5.60439 5.11612 5.11624C5.60427 4.62808 6.39554 4.62808 6.88369 5.11624L11.9999 10.2324L17.1161 5.11624Z"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24">
+    <path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24">
+    <path d="M11.1162 4.11624C11.6044 3.62808 12.3956 3.62808 12.8838 4.11624L19.8838 11.1162C20.3719 11.6044 20.3719 12.3957 19.8838 12.8838L12.8838 19.8838C12.3956 20.372 11.6044 20.372 11.1162 19.8838C10.6281 19.3957 10.6281 18.6044 11.1162 18.1162L15.9824 13.25H5C4.30964 13.25 3.75 12.6904 3.75 12C3.75 11.3097 4.30964 10.75 5 10.75H15.9824L11.1162 5.88382C10.6281 5.39566 10.6281 4.60439 11.1162 4.11624Z"/>
+  </symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24">
+    <path d="M2.75 21V15.25H1C0.309644 15.25 -0.25 14.6904 -0.25 14C-0.25 13.3096 0.309644 12.75 1 12.75H7C7.69036 12.75 8.25 13.3096 8.25 14C8.25 14.6904 7.69036 15.25 7 15.25H5.25V21C5.25 21.6904 4.69036 22.25 4 22.25C3.30964 22.25 2.75 21.6904 2.75 21ZM10.75 21V12C10.75 11.3096 11.3096 10.75 12 10.75C12.6904 10.75 13.25 11.3096 13.25 12V21C13.25 21.6904 12.6904 22.25 12 22.25C11.3096 22.25 10.75 21.6904 10.75 21ZM18.75 21V17.25H17C16.3096 17.25 15.75 16.6904 15.75 16C15.75 15.3096 16.3096 14.75 17 14.75H23C23.6904 14.75 24.25 15.3096 24.25 16C24.25 16.6904 23.6904 17.25 23 17.25H21.25V21C21.25 21.6904 20.6904 22.25 20 22.25C19.3096 22.25 18.75 21.6904 18.75 21ZM18.75 12V3C18.75 2.30964 19.3096 1.75 20 1.75C20.6904 1.75 21.25 2.30964 21.25 3V12C21.25 12.6904 20.6904 13.25 20 13.25C19.3096 13.25 18.75 12.6904 18.75 12ZM2.75 10V3C2.75 2.30964 3.30964 1.75 4 1.75C4.69036 1.75 5.25 2.30964 5.25 3V10C5.25 10.6904 4.69036 11.25 4 11.25C3.30964 11.25 2.75 10.6904 2.75 10ZM10.75 3C10.75 2.30964 11.3096 1.75 12 1.75C12.6904 1.75 13.25 2.30964 13.25 3V6.75H15C15.6904 6.75 16.25 7.30964 16.25 8C16.25 8.69036 15.6904 9.25 15 9.25H9C8.30964 9.25 7.75 8.69036 7.75 8C7.75 7.30964 8.30964 6.75 9 6.75H10.75V3Z"/>
+  </symbol>
+</svg>
+
+<!-- Fondo (simula la home) con el disparador del modal -->
+<div class="page">
+  <button class="launcher" id="openBtn"><svg><use href="#i-sliders"/></svg> Filtrar</button>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<section class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Filtrar por">
+  <div class="handle" id="handle" aria-hidden="true"><span></span></div>
+  <header id="modalHeader">
+    <h2>Filtrar por</h2>
+    <button class="close" aria-label="Cerrar"><svg class="ic24"><use href="#i-close"/></svg></button>
+  </header>
+
+  <div class="body">
+    <!-- FECHA -->
+    <p class="label">Fecha</p>
+    <button class="datefield" id="datefield">Elegir fechas</button>
+    <div class="cal" id="cal">
+      <div class="cal-head">
+        <button class="navbtn prev" id="prev" aria-label="Mes anterior">‹</button>
+        <span class="cal-title" id="caltitle">agosto 2026</span>
+        <button class="navbtn" id="next" aria-label="Mes siguiente">›</button>
+        <button class="okbtn" id="ok" aria-label="Aplicar fecha"><svg class="ic-check"><use href="#i-check"/></svg></button>
+      </div>
+      <div class="dow" id="dow"></div>
+      <div class="days" id="days"></div>
+    </div>
+    <div class="chips" id="datechips">
+      <button class="chip" data-chip="finde">El finde <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip" data-chip="semana">Esta semana <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip" data-chip="mes">Este mes <svg class="chip-x"><use href="#i-close"/></svg></button>
+    </div>
+
+    <!-- ZONAS -->
+    <p class="label gap">Zonas</p>
+    <div class="chips" id="zonechips">
+      <button class="chip">Gijón <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Oviedo <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Avilés y comarca <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Caudal <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Nalón <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Centro <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Oriente <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Occidente <svg class="chip-x"><use href="#i-close"/></svg></button>
+    </div>
+
+    <!-- GÉNEROS -->
+    <p class="label gap">Géneros</p>
+    <div class="chips" id="genrechips">
+      <button class="chip">En familia <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Rock <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Pop e indie <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Electrónica <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Urbano <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Jazz, soul y blues <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Folk y tradicional <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Clásica y lírica <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Verbena y baile <svg class="chip-x"><use href="#i-close"/></svg></button>
+      <button class="chip">Flamenco y latino <svg class="chip-x"><use href="#i-close"/></svg></button>
+    </div>
+    <p class="hint">«En familia» son los eventos que empiezan antes de las 20:00, más todos los de género «Infantil» aunque empiecen más tarde.</p>
+  </div>
+
+  <footer>
+    <button class="secondary" id="clearBtn">Limpiar</button>
+    <button class="apply" id="applyBtn"><span id="applyLabel">Ver 342 eventos</span> <svg class="ic-arrow"><use href="#i-arrow"/></svg></button>
+  </footer>
+</section>
+<p class="note">Proto · el modal entra deslizándose desde abajo y se pliega hacia abajo. Chips para zonas y géneros + calendario real. No es la app real.</p>
+
+<script>
+  // --- Modal bottom-sheet: abrir/plegar ---
+  const panel=document.getElementById('panel');
+  const backdrop=document.getElementById('backdrop');
+  function openModal(){panel.classList.add('open'); backdrop.classList.add('open');}
+  function closeModal(){panel.classList.remove('open'); backdrop.classList.remove('open');}
+  document.getElementById('openBtn').addEventListener('click',openModal);
+  document.querySelector('.close').addEventListener('click',closeModal);
+  backdrop.addEventListener('click',closeModal);
+  document.querySelector('.apply').addEventListener('click',closeModal);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+  // Auto-mostrar la animación de entrada al cargar
+  requestAnimationFrame(()=>setTimeout(openModal,400));
+
+  // Arrastrar el asa / cabecera hacia abajo para cerrar
+  let dy=0, startY=0, dragging=false;
+  function onDown(e){ startY=e.clientY; dragging=true; dy=0; panel.classList.add('dragging');
+    window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp); }
+  function onMove(e){ if(!dragging) return; dy=Math.max(0,e.clientY-startY); panel.style.transform='translateY('+dy+'px)'; }
+  function onUp(){ if(!dragging) return; dragging=false;
+    window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp);
+    panel.classList.remove('dragging'); const shouldClose=dy>110; panel.style.transform=''; if(shouldClose) closeModal(); }
+  document.getElementById('handle').addEventListener('pointerdown',onDown);
+  document.getElementById('modalHeader').addEventListener('pointerdown',onDown);
+
+  // Línea fina en la cabecera cuando el contenido hace scroll
+  const bodyEl=document.querySelector('.body');
+  const modalHeader=document.getElementById('modalHeader');
+  bodyEl.addEventListener('scroll',()=>modalHeader.classList.toggle('scrolled', bodyEl.scrollTop>4));
+
+  // Nº de RESULTADOS (eventos) que darían los filtros elegidos.
+  // Simulado en el proto: en la app real vendría del conteo real de la consulta.
+  const TOTAL_EVENTOS=342;
+  const applyBtn=document.getElementById('applyBtn');
+  const applyLabel=document.getElementById('applyLabel');
+  const clearBtn=document.getElementById('clearBtn');
+  function dateActive(){ return start!==null || dateChips.some(c=>c.classList.contains('on')); }
+  function factor(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return 0.18+(h%28)/100; } // 0.18–0.45
+  function updateCount(){
+    const active=[...document.querySelectorAll('#zonechips .chip.on, #genrechips .chip.on')];
+    let r=TOTAL_EVENTOS;
+    active.forEach(c=>{ r*=factor(c.textContent.trim()); });
+    if(dateActive()) r*=0.5;
+    const n=(active.length||dateActive()) ? Math.round(r) : TOTAL_EVENTOS;
+    if(n<=0){ applyLabel.textContent='Sin eventos'; applyBtn.disabled=true; }
+    else{ applyLabel.textContent='Ver '+n+(n===1?' evento':' eventos'); applyBtn.disabled=false; }
+  }
+
+  document.querySelectorAll('#zonechips .chip, #genrechips .chip').forEach(c=>{
+    c.addEventListener('click',()=>{ c.classList.toggle('on'); updateCount(); });
+  });
+
+  const dateChips=[...document.querySelectorAll('#datechips .chip')];
+  dateChips.forEach(c=>c.addEventListener('click',()=>{
+    const was=c.classList.contains('on');
+    dateChips.forEach(x=>x.classList.remove('on'));
+    if(!was){c.classList.add('on'); clearRange(); setFieldLabel('');}
+    updateCount();
+  }));
+
+  document.getElementById('clearBtn').addEventListener('click',()=>{
+    document.querySelectorAll('#zonechips .chip.on, #genrechips .chip.on').forEach(c=>c.classList.remove('on'));
+    dateChips.forEach(c=>c.classList.remove('on'));
+    cal.classList.remove('open'); clearRange(); setFieldLabel(''); updateCount();
+  });
+
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const ABBR=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const field=document.getElementById('datefield');
+  const cal=document.getElementById('cal');
+  const daysEl=document.getElementById('days');
+  const title=document.getElementById('caltitle');
+  const dowEl=document.getElementById('dow');
+  ['L','M','X','J','V','S','D'].forEach(d=>{
+    const s=document.createElement('span'); s.textContent=d; dowEl.appendChild(s);
+  });
+
+  let view=new Date(2026,7,1);
+  let start=null, end=null;
+
+  field.addEventListener('click',()=>cal.classList.toggle('open'));
+  document.getElementById('ok').addEventListener('click',()=>cal.classList.remove('open'));
+  document.getElementById('prev').addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render();});
+  document.getElementById('next').addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render();});
+
+  function clearRange(){start=end=null;render();}
+  function setFieldLabel(txt){
+    if(txt){field.textContent=txt; field.classList.add('has-value');}
+    else{field.textContent='Elegir fechas'; field.classList.remove('has-value');}
+  }
+  function iso(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function shortLabel(d){return d.getDate()+' '+ABBR[d.getMonth()];}
+
+  function pick(d){
+    dateChips.forEach(x=>x.classList.remove('on'));
+    if(!start||(start&&end)){start=d;end=null;}
+    else{ if(d<start){end=start;start=d;} else end=d; }
+    if(start&&!end) setFieldLabel(shortLabel(start));
+    else if(start&&end) setFieldLabel(shortLabel(start)+' - '+shortLabel(end));
+    render(); updateCount();
+  }
+
+  function render(){
+    title.textContent=MESES[view.getMonth()]+' '+view.getFullYear();
+    daysEl.innerHTML='';
+    const y=view.getFullYear(), m=view.getMonth();
+    const lead=(new Date(y,m,1).getDay()+6)%7;
+    for(let i=0;i<lead;i++){const b=document.createElement('div');b.className='cell empty';daysEl.appendChild(b);}
+    const dim=new Date(y,m+1,0).getDate();
+    for(let d=1;d<=dim;d++){
+      const cur=new Date(y,m,d);
+      const col=(lead+d-1)%7;
+      const cell=document.createElement('div'); cell.className='cell';
+      const isFrom=start&&iso(cur)===iso(start);
+      const isTo=end&&iso(cur)===iso(end);
+      const isMid=start&&end&&cur>start&&cur<end;
+      let html='';
+      if(isMid) html+='<span class="fill mid"></span>';
+      if(isTo&&col!==0) html+='<span class="fill left"></span>';
+      if(isFrom&&end&&cur<end&&col!==6) html+='<span class="fill right"></span>';
+      if(isFrom||isTo) cell.classList.add('edge');
+      html+='<button><span class="num">'+d+'</span></button>';
+      cell.innerHTML=html;
+      cell.querySelector('button').addEventListener('click',()=>pick(cur));
+      daysEl.appendChild(cell);
+    }
+  }
+  render();
+  updateCount();
+</script>
+</body>
+</html>
