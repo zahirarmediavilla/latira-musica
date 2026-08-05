@@ -13,7 +13,7 @@ export const SITE_NAME = "LaTira";
 
 export const HOME_TITLE = "Agenda de conciertos y eventos musicales en Asturias";
 export const HOME_DESCRIPTION =
-  "La Tira es la agenda de música en directo de Asturias: conciertos, festivales, salas y bolos de bares actualizados a diario. Encuentra qué ver y escuchar hoy cerca de ti —Oviedo, Gijón, Avilés, y todo Asturias— con fecha, sala, artistas y entradas.";
+  "La Tira es la agenda de música de Asturias: conciertos, festivales, salas y bolos de bares actualizados a diario. Encuentra qué ver y escuchar hoy cerca de ti —Oviedo, Gijón, Avilés, y todo Asturias— con fecha, sala, artistas y entradas.";
 
 /** Configured base URL without a trailing slash, or `undefined` if unset. */
 export function siteUrl(): string | undefined {
