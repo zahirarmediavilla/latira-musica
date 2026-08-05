@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/events";
+import { eventIdFromSlug } from "@/lib/seo";
 import { EventDetail } from "@/components/EventDetail";
 import { DetailActions } from "@/components/DetailActions";
 import { TrackView } from "@/components/TrackView";
@@ -10,10 +11,11 @@ import { AnalyticsEvent } from "@/lib/analytics";
 export default async function EventModal({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const ev = await getEventById(id);
+  const { slug } = await params;
+  const id = eventIdFromSlug(slug);
+  const ev = id === null ? null : await getEventById(String(id));
   if (!ev) notFound();
 
   return (

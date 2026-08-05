@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getEvents } from "@/lib/events";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, eventPath } from "@/lib/seo";
 
 // Sitemap entries require absolute URLs, so we emit nothing until a base URL is
 // configured (lib/seo.ts). Includes the homepage and every event page.
@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     ...events.map((ev) => ({
-      url: absoluteUrl(`/event/${ev.id}`)!,
+      url: absoluteUrl(eventPath(ev))!,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,

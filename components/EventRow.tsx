@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LaEvent } from "@/lib/types";
+import { eventPath } from "@/lib/seo";
 
 // A single event in the list: title, optional artists, venue+location, hour+price.
 // No card background — sits on the grey page. Same-date events are separated by an
@@ -20,7 +21,7 @@ export function EventRow({
   const locationLabel = event.venue?.localidad || event.location;
   return (
     <Link
-      href={`/event/${event.id}`}
+      href={eventPath(event)}
       className={
         "block pb-6 pr-5 " +
         (first ? "pt-5" : "pt-6") +

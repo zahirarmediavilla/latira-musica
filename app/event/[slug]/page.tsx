@@ -10,6 +10,8 @@ import {
   SITE_NAME,
   canonicalFor,
   eventDescription,
+  eventIdFromSlug,
+  eventPath,
   eventTitle,
   openGraphFor,
 } from "@/lib/seo";
@@ -17,15 +19,18 @@ import {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const ev = await getEventById(id);
+  const { slug } = await params;
+  const id = eventIdFromSlug(slug);
+  const ev = id === null ? null : await getEventById(String(id));
   if (!ev) return {}; // falls back to the layout defaults
 
   const title = eventTitle(ev);
   const description = eventDescription(ev);
-  const path = `/event/${ev.id}`;
+  // Always canonical to the enriched slug, so a bare-id or stale-slug URL
+  // consolidates onto one address for search engines.
+  const path = eventPath(ev);
 
   return {
     title,
@@ -44,10 +49,11 @@ export async function generateMetadata({
 export default async function EventPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const ev = await getEventById(id);
+  const { slug } = await params;
+  const id = eventIdFromSlug(slug);
+  const ev = id === null ? null : await getEventById(String(id));
   if (!ev) notFound();
 
   return (

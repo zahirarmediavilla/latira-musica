@@ -3,7 +3,7 @@
 // images. Rendered by components/JsonLd.tsx.
 
 import type { LaEvent } from "./types";
-import { SITE_NAME, absoluteUrl, eventPlace } from "./seo";
+import { SITE_NAME, absoluteUrl, eventPath, eventPlace } from "./seo";
 
 // Minimal JSON-LD shape: an object with @context/@type plus arbitrary fields.
 type JsonLdObject = Record<string, unknown>;
@@ -80,7 +80,7 @@ function buildPerformers(ev: LaEvent): JsonLdObject[] {
 
 /** Schema.org MusicEvent for an event detail page. */
 export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
-  const url = absoluteUrl(`/event/${ev.id}`);
+  const url = absoluteUrl(eventPath(ev));
   const offers = buildOffers(ev);
   const location = buildLocation(ev);
   const sameAs = referenceLinks(ev);

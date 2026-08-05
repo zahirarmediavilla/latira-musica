@@ -1,5 +1,5 @@
 import { getEventById } from "@/lib/events";
-import { eventPlaceLabel } from "@/lib/seo";
+import { eventIdFromSlug, eventPlaceLabel } from "@/lib/seo";
 import { buildIcs } from "@/lib/ics";
 
 // Serves the event as a text/calendar document. iOS Safari opens the native
@@ -8,10 +8,11 @@ import { buildIcs } from "@/lib/ics";
 // This is what the "Añadir a calendario" link points at — see DetailActions.
 export async function GET(
   _req: Request,
-  ctx: { params: Promise<{ id: string }> },
+  ctx: { params: Promise<{ slug: string }> },
 ) {
-  const { id } = await ctx.params;
-  const ev = await getEventById(id);
+  const { slug } = await ctx.params;
+  const id = eventIdFromSlug(slug);
+  const ev = id === null ? null : await getEventById(String(id));
   if (!ev) return new Response("Not found", { status: 404 });
 
   const ics = buildIcs({
