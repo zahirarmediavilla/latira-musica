@@ -1,9 +1,13 @@
 import { HEADER_H } from "@/lib/layout";
 
-// Shown while the home page streams (the page is force-dynamic, so this fallback
-// appears on each request until getEvents() resolves). Mirrors the EventList
-// layout — a date gutter plus a few rows — so the wait feels like the real list.
-export default function Loading() {
+// Loading placeholder for the home list, shown as the <Suspense> fallback in
+// app/page.tsx while getEvents() resolves on a cold render. Mirrors the
+// EventList layout — a date gutter plus a few rows — so the wait feels like the
+// real list. Lives as a scoped Suspense fallback (not a route-level
+// loading.tsx): a global loading boundary makes every route stream, which turns
+// notFound()/permanentRedirect() in the event route into a 200 soft-404 / a
+// client-side redirect instead of real 404/308 status codes.
+export function HomeSkeleton() {
   return (
     <div
       className="animate-pulse"

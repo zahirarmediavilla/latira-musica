@@ -36,18 +36,20 @@ export function canonicalFor(path: string): Metadata["alternates"] {
 }
 
 /**
- * Shared social preview image: the app icon that already ships
- * (`app/apple-icon.png` → `/apple-icon.png`, 180×180). Square, so it renders as
- * a compact badge beside the text — the very image messaging apps already fall
- * back to, now declared explicitly for `og:image` and `twitter:image`.
+ * Shared social preview image: a generic 1200×630 card (`/og.png`) — the white
+ * LaTira wordmark centered on the brand's near-black background, with black
+ * padding all around. 1200×630 is the size Facebook/X/WhatsApp/Telegram render
+ * as a large banner, so the share shows a proper branded card instead of a tiny
+ * icon. Deliberately generic (same image for every page): the site has no
+ * per-event artwork, so a clean brand card beats a mismatched thumbnail.
  * `undefined` until a base URL exists: a relative image with no `metadataBase`
  * is a build error, and the tag needs an absolute URL anyway.
  */
 function socialImage():
   | { url: string; width: number; height: number; alt: string }
   | undefined {
-  const url = absoluteUrl("/apple-icon.png");
-  return url ? { url, width: 180, height: 180, alt: SITE_NAME } : undefined;
+  const url = absoluteUrl("/og.png");
+  return url ? { url, width: 1200, height: 630, alt: SITE_NAME } : undefined;
 }
 
 /**
@@ -76,11 +78,10 @@ export function openGraphFor(opts: {
 }
 
 /**
- * Twitter/X card block. `summary` (not `summary_large_image`) because the
- * preview is the square 180×180 app icon — a small thumbnail next to the text,
- * matching what messaging apps already show. Same shallow-merge reasoning as
- * `openGraphFor`: build the whole object every place. Image only once a base
- * URL exists (see `socialImage`).
+ * Twitter/X card block. `summary_large_image` because the preview is now the
+ * 1200×630 brand banner (see `socialImage`), which renders as a full-width card.
+ * Same shallow-merge reasoning as `openGraphFor`: build the whole object every
+ * place. Image only once a base URL exists.
  */
 export function twitterFor(opts: {
   title: string;
@@ -88,7 +89,7 @@ export function twitterFor(opts: {
 }): NonNullable<Metadata["twitter"]> {
   const image = socialImage();
   return {
-    card: "summary",
+    card: image ? "summary_large_image" : "summary",
     title: opts.title,
     description: opts.description,
     ...(image ? { images: [image] } : {}),

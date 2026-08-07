@@ -1,5 +1,5 @@
 import type { DayGroup } from "@/lib/types";
-import { dayNumber, monthAbbr } from "@/lib/format";
+import { dayNumber, monthAbbr, formatMediumDate } from "@/lib/format";
 import { HEADER_H } from "@/lib/layout";
 import { EventRow } from "./EventRow";
 
@@ -23,6 +23,10 @@ export function EventList({
           className="flex"
           style={{ borderBottom: "1.5px solid #b8b8b8" }}
         >
+          {/* Per-day heading for a correct h1 › h2 › h3 outline (the visible
+              date is a decorative number/month block, not a heading). sr-only,
+              so it's read by crawlers/screen readers without changing layout. */}
+          <h2 className="sr-only">Eventos del {formatMediumDate(group.date)}</h2>
           <div className="w-[72px] shrink-0">
             <div className="sticky flex gap-4" style={{ top: dateTop }}>
               <div className="w-[10px] self-stretch bg-yellow" />

@@ -50,7 +50,7 @@ function fixCaps(s: string): string {
 // NB: the live `eventos` table has no `free` column — it is derived from price.
 const SELECT =
   "id, name, date, start_at, artists, genres, price, ticket_url, " +
-  "event_url, location, description, sample_url, " +
+  "event_url, location, description, sample_url, created_at, " +
   "recintos ( id, nombre, direccion, maps_url, municipio, localidad )";
 
 interface VenueRow {
@@ -75,6 +75,7 @@ interface EventRow {
   location: string | null;
   description: string | null;
   sample_url: string | null;
+  created_at: string | null;
   // Supabase returns a to-one embedded relation as an object (or null).
   recintos: VenueRow | VenueRow[] | null;
 }
@@ -113,6 +114,7 @@ function toEvent(r: EventRow): LaEvent {
     venue: toVenue(r.recintos),
     description: str(r.description),
     sampleUrl: str(r.sample_url),
+    createdAt: str(r.created_at),
   };
 }
 

@@ -41,6 +41,16 @@ export const metadata: Metadata = {
   },
   description: HOME_DESCRIPTION,
   applicationName: SITE_NAME,
+  // Google Search Console verification via env var (no code change to claim the
+  // domain). Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to the token
+  // Search Console gives you; emits <meta name="google-site-verification">.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        verification: {
+          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        },
+      }
+    : {}),
   // robots is set per-page (home + event) rather than here, so Next's automatic
   // `noindex` on not-found pages isn't overridden by a global `index, follow`.
   openGraph: openGraphFor({

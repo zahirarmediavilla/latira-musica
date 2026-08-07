@@ -8,10 +8,24 @@ import { SITE_NAME, absoluteUrl, eventPath, eventPlace } from "./seo";
 // Minimal JSON-LD shape: an object with @context/@type plus arbitrary fields.
 type JsonLdObject = Record<string, unknown>;
 
-/** Combine a YYYY-MM-DD date with an optional "HH:MM" into an ISO-like value
- *  ("2026-06-16T20:00" or just "2026-06-16"). Used for startDate. */
+/** UTC offset for Europe/Madrid on a given day, e.g. "+02:00" (summer) or
+ *  "+01:00" (winter). Handles DST by asking Intl for the offset on that date. */
+function madridOffset(date: string): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  const s = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Madrid",
+    timeZoneName: "longOffset",
+  }).format(d);
+  const m = s.match(/GMT([+-]\d{2}:\d{2})/);
+  return m ? m[1] : "+01:00";
+}
+
+/** Combine a YYYY-MM-DD date with an optional "HH:MM" into an ISO 8601 value
+ *  WITH the Madrid timezone offset ("2026-06-16T20:00:00+02:00"), or the bare
+ *  date when there's no hour. Google reads the offset to place the event in the
+ *  right timezone; without it the time is ambiguous. */
 function startDate(date: string, hour: string): string {
-  return hour ? `${date}T${hour}` : date;
+  return hour ? `${date}T${hour}:00${madridOffset(date)}` : date;
 }
 
 /** Parse the numeric amount from a free-text price like "12 €" / "desde 12,50 €".
@@ -85,6 +99,10 @@ export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
   const location = buildLocation(ev);
   const sameAs = referenceLinks(ev);
   const organizer = buildOrganizationJsonLd({ asReference: true });
+  // Google's Event rich result treats `image` as required; the site has no
+  // per-event artwork, so we fall back to the generic brand card. Better to be
+  // eligible with the brand image than ineligible with none.
+  const image = absoluteUrl("/og.png");
 
   return {
     "@context": "https://schema.org",
@@ -95,11 +113,29 @@ export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     performer: buildPerformers(ev),
     organizer,
+    ...(image ? { image: [image] } : {}),
     ...(ev.description ? { description: ev.description } : {}),
     ...(location ? { location } : {}),
     ...(offers ? { offers } : {}),
     ...(sameAs.length ? { sameAs } : {}),
     ...(url ? { url } : {}),
+  };
+}
+
+/** Schema.org BreadcrumbList for an event page: Home › event name. Gives search
+ *  engines a breadcrumb trail to show in results and reinforces site structure.
+ *  Emitted only once a base URL exists (breadcrumb items need absolute URLs). */
+export function buildBreadcrumbJsonLd(ev: LaEvent): JsonLdObject | null {
+  const home = absoluteUrl("/");
+  const eventUrl = absoluteUrl(eventPath(ev));
+  if (!home || !eventUrl) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: SITE_NAME, item: home },
+      { "@type": "ListItem", position: 2, name: ev.name, item: eventUrl },
+    ],
   };
 }
 

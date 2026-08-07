@@ -24,6 +24,7 @@ export interface LaEvent {
   venue: Venue | null;
   description: string;
   sampleUrl: string;
+  createdAt: string; // ISO timestamp the event was added (for sitemap lastmod)
 }
 
 export const ZONES = [

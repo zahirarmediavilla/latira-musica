@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getEventById } from "@/lib/events";
 import { EventDetail } from "@/components/EventDetail";
@@ -12,10 +12,30 @@ import {
   eventDescription,
   eventIdFromSlug,
   eventPath,
+  eventSlug,
   eventTitle,
   openGraphFor,
   twitterFor,
 } from "@/lib/seo";
+
+// ISR: render each event once and cache it for 5 min (matches the Supabase data
+// cache). This makes the page CDN-cacheable AND — crucially — renders it to
+// completion before responding, so `notFound()` returns a real 404 and
+// `permanentRedirect()` a real 308. While the route was dynamic/streamed (via
+// the root loading.tsx boundary) both degraded: notFound() served a 200
+// soft-404 and a redirect would have been a client-side meta tag.
+export const revalidate = 300;
+
+// Prerender nothing at build (slugs are unknown and churn daily), but opt the
+// route into ISR: with `generateStaticParams` present, Next renders each event
+// on first request to COMPLETION and caches it — instead of streaming it
+// dynamically. Blocking render is what makes `notFound()`/`permanentRedirect()`
+// return real 404/308 status codes rather than a 200 soft-404 or a client-side
+// redirect meta tag (the streaming-context degradation). `dynamicParams` stays
+// at its default `true`, so any event id still resolves on demand.
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -60,6 +80,13 @@ export default async function EventPage({
   const id = eventIdFromSlug(slug);
   const ev = id === null ? null : await getEventById(String(id));
   if (!ev) notFound();
+
+  // Consolidate every alias of this event onto its canonical slug: a bare-id
+  // link (/event/532) or a stale slug (name/date edited since) 308-redirects to
+  // the enriched address instead of serving a duplicate 200. The intercepting
+  // modal never hits this — its links are already canonical.
+  const canonical = eventSlug(ev);
+  if (slug !== canonical) permanentRedirect(eventPath(ev));
 
   return (
     // Direct visits (hard navigation) land here instead of the intercepting
