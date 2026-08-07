@@ -36,10 +36,25 @@ export function canonicalFor(path: string): Metadata["alternates"] {
 }
 
 /**
+ * Shared social preview image: the app icon that already ships
+ * (`app/apple-icon.png` → `/apple-icon.png`, 180×180). Square, so it renders as
+ * a compact badge beside the text — the very image messaging apps already fall
+ * back to, now declared explicitly for `og:image` and `twitter:image`.
+ * `undefined` until a base URL exists: a relative image with no `metadataBase`
+ * is a build error, and the tag needs an absolute URL anyway.
+ */
+function socialImage():
+  | { url: string; width: number; height: number; alt: string }
+  | undefined {
+  const url = absoluteUrl("/apple-icon.png");
+  return url ? { url, width: 180, height: 180, alt: SITE_NAME } : undefined;
+}
+
+/**
  * Complete Open Graph block. Centralized because Next merges metadata
  * shallowly — a page that sets a partial `openGraph` would drop the shared
  * fields (siteName, locale, type), so every page builds the full object here.
- * `og:url` is included only once a base URL is configured.
+ * `og:url` and `og:image` are included only once a base URL is configured.
  */
 export function openGraphFor(opts: {
   title: string;
@@ -48,6 +63,7 @@ export function openGraphFor(opts: {
   path?: string;
 }): NonNullable<Metadata["openGraph"]> {
   const url = opts.path ? absoluteUrl(opts.path) : undefined;
+  const image = socialImage();
   return {
     type: opts.type ?? "website",
     siteName: SITE_NAME,
@@ -55,6 +71,27 @@ export function openGraphFor(opts: {
     title: opts.title,
     description: opts.description,
     ...(url ? { url } : {}),
+    ...(image ? { images: [image] } : {}),
+  };
+}
+
+/**
+ * Twitter/X card block. `summary` (not `summary_large_image`) because the
+ * preview is the square 180×180 app icon — a small thumbnail next to the text,
+ * matching what messaging apps already show. Same shallow-merge reasoning as
+ * `openGraphFor`: build the whole object every place. Image only once a base
+ * URL exists (see `socialImage`).
+ */
+export function twitterFor(opts: {
+  title: string;
+  description: string;
+}): NonNullable<Metadata["twitter"]> {
+  const image = socialImage();
+  return {
+    card: "summary",
+    title: opts.title,
+    description: opts.description,
+    ...(image ? { images: [image] } : {}),
   };
 }
 

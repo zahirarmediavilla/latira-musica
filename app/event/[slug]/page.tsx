@@ -14,6 +14,7 @@ import {
   eventPath,
   eventTitle,
   openGraphFor,
+  twitterFor,
 } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -42,6 +43,10 @@ export async function generateMetadata({
       description,
       type: "article",
       path,
+    }),
+    twitter: twitterFor({
+      title: `${title} | ${SITE_NAME}`,
+      description,
     }),
   };
 }
