@@ -25,7 +25,7 @@ export function EventList({
         >
           <div className="w-[72px] shrink-0">
             <div className="sticky flex gap-4" style={{ top: dateTop }}>
-              <div className="w-2 self-stretch bg-yellow" />
+              <div className="w-[10px] self-stretch bg-yellow" />
               <div className="flex flex-col justify-center py-5 text-center leading-none">
                 <div className="font-display text-[26px] font-bold text-ink">
                   {dayNumber(group.date)}
