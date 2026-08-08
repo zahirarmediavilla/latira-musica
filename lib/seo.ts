@@ -133,10 +133,35 @@ export function eventTitle(ev: LaEvent): string {
 }
 
 /**
- * Meta description built from whatever data the event has. Never leaves holes:
- * the place clause is dropped when there is no venue/location.
+ * Collapse whitespace and truncate to `max` chars on a word boundary, adding an
+ * ellipsis when cut. Meta descriptions render on a single line and Google trims
+ * around ~160 chars, so newlines and runs of spaces are flattened first and any
+ * dangling punctuation at the cut is dropped.
+ */
+function truncateForMeta(text: string, max = 160): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  const trimmed = (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(
+    /[\s.,;:·–—-]+$/,
+    "",
+  );
+  return `${trimmed}…`;
+}
+
+/**
+ * Meta description for an event. Prefers the event's own curated description —
+ * a unique, compelling snippet gives a better search-result CTR and avoids the
+ * near-duplicate boilerplate that repeats across hundreds of pages. Falls back
+ * to a data-built sentence (name/date/place) when there's no real description,
+ * or it's too short to stand on its own as a snippet. Never leaves holes: the
+ * place/date clauses are dropped when absent.
  */
 export function eventDescription(ev: LaEvent): string {
+  const own = ev.description?.replace(/\s+/g, " ").trim() ?? "";
+  if (own.length >= 40) return truncateForMeta(own);
+
   const place = eventPlaceLabel(ev);
   const date = ev.date ? formatMediumDate(ev.date) : "";
   const when = date ? ` el ${date}` : "";
