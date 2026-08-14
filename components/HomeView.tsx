@@ -177,7 +177,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
         // Buscador desplegado y vacío: apoyo en lugar del listado (mismo estilo
         // que No-resultados).
         <div className="px-8 pt-20 text-center">
-          <p className="text-lg text-muted">Busca por eventos o artistas</p>
+          <p className="text-lg text-muted">Busca por eventos, artistas o recinto</p>
         </div>
       ) : groups.length === 0 ? (
         <div className="px-8 pt-20 text-center">

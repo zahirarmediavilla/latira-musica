@@ -56,12 +56,13 @@ export function countActive(f: Filters): number {
   return f.zones.length + f.genres.length + (f.from || f.to ? 1 : 0);
 }
 
-/** Apply zone + date-range filters and a free-text query (name/artists).
+/** Apply zone + date-range filters and a free-text query (name/artists/venue).
  *
- *  Name/artists only, by design: the venue and locality a row displays are not
- *  searchable, and that is not a bug to fix. Geography belongs to the zone
- *  filter; a locality that does match ("Luanco") matches as part of the event
- *  name. Ask before widening the haystack. */
+ *  The query matches the event name, its artists, and the venue name — so you
+ *  can search for a room ("Sala Gong") and get everything playing there. The
+ *  locality is NOT searchable on purpose: geography belongs to the zone filter,
+ *  and a locality that does match ("Luanco") matches as part of the event or
+ *  venue name. Ask before widening the haystack further. */
 export function applyFilters(
   events: LaEvent[],
   f: Filters,
@@ -78,7 +79,7 @@ export function applyFilters(
     }
     if (!eventMatchesGenres(ev, f.genres)) return false;
     if (q) {
-      const hay = norm(`${ev.name} ${ev.artists}`);
+      const hay = norm(`${ev.name} ${ev.artists} ${ev.venue?.name ?? ""}`);
       if (!hay.includes(q)) return false;
     }
     return true;
