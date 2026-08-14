@@ -118,9 +118,23 @@ function toEvent(r: EventRow): LaEvent {
   };
 }
 
+// Sort key for the hour within a day. Events past midnight (00:00–05:59) are
+// dated to the night they *start* (a 00:00 gig is "Saturday night", filed on
+// Saturday), so within that day they belong at the *end* of the listing, not
+// the start. Treat those hours as +24h for ordering only; events with no hour
+// (all-day) still sort last.
+function hourKey(hour: string): string {
+  if (!hour) return "99:99";
+  const h = Number(hour.slice(0, 2));
+  if (Number.isFinite(h) && h < 6) {
+    return String(24 + h).padStart(2, "0") + hour.slice(2);
+  }
+  return hour;
+}
+
 function byDateThenHour(a: LaEvent, b: LaEvent): number {
   if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-  return (a.hour || "99:99").localeCompare(b.hour || "99:99");
+  return hourKey(a.hour).localeCompare(hourKey(b.hour));
 }
 
 // Today's date (YYYY-MM-DD) in Europe/Madrid, to filter out past events.
