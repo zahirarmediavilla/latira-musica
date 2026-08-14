@@ -254,7 +254,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
               <CloseIcon />
             </button>
           </div>
-          <div className="space-y-6 px-5 pt-8 text-lg leading-relaxed text-ink">
+          <div className="flex-1 space-y-6 overflow-y-auto px-5 pb-10 pt-8 text-lg leading-relaxed text-ink">
             <p>
               LaTira quiere ser el lugar donde se puedan ver todos los eventos
               musicales de Asturias, del género que sea. La idea es sencilla:
