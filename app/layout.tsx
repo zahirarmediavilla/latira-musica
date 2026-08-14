@@ -82,12 +82,26 @@ export default function RootLayout({
             de producción (`umamiDomains`), dejando fuera previews y el dominio
             Vercel; sin base configurada no se emite y no restringe nada. */}
         {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
-          <Script
-            src={process.env.NEXT_PUBLIC_UMAMI_SRC}
-            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-            {...(umamiDomains ? { "data-domains": umamiDomains } : {})}
-            strategy="afterInteractive"
-          />
+          <>
+            {/* Auto-exclusión de la propia medición, por dispositivo. Umami no
+                cuenta a un navegador que tenga `umami.disabled` en su
+                localStorage; esta marca es por navegador (el móvil y el
+                ordenador son almacenes distintos). Abrir la web con `?notrack`
+                la activa y con `?track` la quita. Va en `beforeInteractive`
+                para que corra en el <head> ANTES que el script de Umami
+                (afterInteractive) y no cuente ni el primer instante. En un
+                iPhone, si añades a la pantalla de inicio desde `…/?notrack`,
+                el icono reabre con el parámetro y se re-marca en cada apertura. */}
+            <Script id="umami-optout" strategy="beforeInteractive">
+              {`try{var p=new URLSearchParams(location.search);if(p.has('notrack')){localStorage.setItem('umami.disabled','1')}else if(p.has('track')){localStorage.removeItem('umami.disabled')}}catch(e){}`}
+            </Script>
+            <Script
+              src={process.env.NEXT_PUBLIC_UMAMI_SRC}
+              data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+              {...(umamiDomains ? { "data-domains": umamiDomains } : {})}
+              strategy="afterInteractive"
+            />
+          </>
         )}
       </body>
     </html>
