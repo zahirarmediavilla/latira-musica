@@ -84,6 +84,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) {
   return (
     <html lang="es" className={inter.variable}>
+      {/* Preload de la fuente display (peso bold): es la que pinta el título de
+          la ficha y los nombres/fechas del listado, todo above-the-fold. Sin
+          esto el navegador no la descubre hasta parsear el CSS → FOUT en lo más
+          visible. React 19 iza el <link> al <head>. */}
+      <link
+        rel="preload"
+        href="/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
       {/* Shell fijo: el documento nunca scrollea (cada pantalla scrollea en su
           propio contenedor interno). Así el navegador móvil no muestra/oculta su
           barra al pasar de la home a un overlay, que era el salto vertical del

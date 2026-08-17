@@ -20,6 +20,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 1,
     },
+    {
+      url: absoluteUrl("/info")!,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
     ...events.map((ev) => ({
       url: absoluteUrl(eventPath(ev))!,
       // A STABLE per-URL date (when the event was added) instead of `new Date()`.
