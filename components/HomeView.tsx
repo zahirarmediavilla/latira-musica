@@ -12,12 +12,16 @@ import {
 } from "@/lib/filtering";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { dayNumber, monthAbbr } from "@/lib/format";
-import { FILTER_ROW_H, HEADER_H, HEADER_WITH_FILTERS } from "@/lib/layout";
+import {
+  FILTER_ROW_H,
+  HEADER_H,
+  HEADER_WITH_FILTERS,
+  HEADER_WITH_SEARCH,
+} from "@/lib/layout";
 import { Header, SPRING } from "./Header";
 import { EventList } from "./EventList";
 import { RemovableTag } from "./Chip";
 import { FiltersOverlay } from "./FiltersOverlay";
-import { CloseIcon } from "./icons";
 
 const CHIP_LABELS: Record<string, string> = {
   finde: "El finde",
@@ -56,9 +60,11 @@ export function HomeView({ events }: { events: LaEvent[] }) {
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(persistedFilters);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   // El buscador va oculto por defecto; se despliega desde la lupa.
   const [searchOpen, setSearchOpen] = useState(false);
+  // El listado scrollea dentro de este contenedor (no el documento): el shell
+  // raíz es fijo, así el navegador no muestra/oculta su barra al abrir overlays.
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     persistedFilters = filters;
@@ -103,6 +109,10 @@ export function HomeView({ events }: { events: LaEvent[] }) {
 
   return (
     <>
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
       <Header
         query={query}
         onQueryChange={setQuery}
@@ -114,14 +124,13 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           } else {
             setSearchOpen(true);
           }
+          // Al abrir/cerrar la búsqueda, volver arriba del listado (el contenido
+          // cambia de altura, así que sin esto el scroll quedaría descolgado).
+          scrollRef.current?.scrollTo(0, 0);
         }}
         onFilter={() => {
           setFilterOpen(true);
           track(AnalyticsEvent.abrirFiltros);
-        }}
-        onInfo={() => {
-          setMenuOpen(true);
-          track(AnalyticsEvent.abrirMenu);
         }}
         resultCount={searching ? filtered.length : null}
         filterCount={countActive(filters)}
@@ -202,9 +211,16 @@ export function HomeView({ events }: { events: LaEvent[] }) {
       ) : (
         <EventList
           groups={groups}
-          dateTop={showFilters ? HEADER_WITH_FILTERS : HEADER_H}
+          dateTop={
+            searching
+              ? HEADER_WITH_SEARCH
+              : showFilters
+                ? HEADER_WITH_FILTERS
+                : HEADER_H
+          }
         />
       )}
+      </div>
 
       {filterOpen && (
         <FiltersOverlay
@@ -240,56 +256,6 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           }}
           onClose={() => setFilterOpen(false)}
         />
-      )}
-
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 mx-auto flex max-w-[480px] flex-col bg-bg text-ink">
-          <div className="flex justify-end px-5 pt-5">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(false)}
-              aria-label="Cerrar"
-              className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-ink/5"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="flex-1 space-y-6 overflow-y-auto px-5 pb-10 pt-8 text-lg leading-relaxed text-ink">
-            <p>
-              LaTira quiere ser el lugar donde se puedan ver todos los eventos
-              musicales de Asturias, del género que sea. La idea es sencilla:
-              enseñar todo lo que se mueve aquí, mucho más de lo que parece.
-            </p>
-            <p>
-              Detrás de cada concierto hay mucha gente. Quienes hacen la música y
-              se suben a tocarla, que son los primeros a los que hay que dar las
-              gracias. Están los bares, las salas, las promotoras y quienes se
-              ponen a organizar, liándose la manta a la cabeza para que podamos
-              disfrutar y bailar.
-            </p>
-            <p>
-              Cada evento lleva enlazada su fuente, siempre que sea posible. Quien
-              difunde también hace un trabajo, y es justo que se vea de dónde viene
-              la información.
-            </p>
-            <p>
-              Esto es un proyecto sin ánimo de lucro y con la privacidad por
-              delante. Los datos que se registran son anónimos y no se van a vender
-              a nadie. Nunca.
-            </p>
-            <p>
-              Si quieres saber más, contarnos algo o que incluyamos un evento en la
-              lista, escribe a{" "}
-              <a
-                href="mailto:hola@latira.org"
-                className="font-medium underline"
-                onClick={() => track(AnalyticsEvent.clicContactoEmail)}
-              >
-                hola@latira.org
-              </a>
-            </p>
-          </div>
-        </div>
       )}
     </>
   );

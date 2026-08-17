@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -41,6 +41,10 @@ export const metadata: Metadata = {
   },
   description: HOME_DESCRIPTION,
   applicationName: SITE_NAME,
+  // Installed (standalone) on iOS: black status bar always, so the OS clock band
+  // stays dark and consistent between the home and the light detail/info screens
+  // (no flip). Pairs with the dark `theme-color` in `viewport` below for browsers.
+  appleWebApp: { capable: true, statusBarStyle: "black", title: SITE_NAME },
   // Google Search Console verification via env var (no code change to claim the
   // domain). Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to the token
   // Search Console gives you; emits <meta name="google-site-verification">.
@@ -65,13 +69,27 @@ export const metadata: Metadata = {
   }),
 };
 
+// A single, dark `theme-color` for every page. The browser tints its toolbar /
+// status band with this one value — the same on the home and on the (light)
+// detail/info screens — so that band never flips colour between screens. This
+// is what makes the top of the screen stop "jumping" on navigation; there is no
+// per-page theme-color to swap.
+export const viewport: Viewport = {
+  themeColor: "#1a1a1a",
+};
+
 export default function RootLayout({
   children,
   modal,
 }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) {
   return (
     <html lang="es" className={inter.variable}>
-      <body className="min-h-dvh bg-bg text-ink font-sans antialiased">
+      {/* Shell fijo: el documento nunca scrollea (cada pantalla scrollea en su
+          propio contenedor interno). Así el navegador móvil no muestra/oculta su
+          barra al pasar de la home a un overlay, que era el salto vertical del
+          área superior. Los overlays (ficha, info) son `fixed inset-0` y quedan
+          por encima; la home scrollea dentro de su contenedor `flex-1`. */}
+      <body className="flex h-dvh flex-col overflow-hidden bg-bg text-ink font-sans antialiased">
         {children}
         {modal}
         {/* Umami (analytics privacy-first, sin cookies → sin banner). Solo se

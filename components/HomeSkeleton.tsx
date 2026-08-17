@@ -10,7 +10,7 @@ import { HEADER_H } from "@/lib/layout";
 export function HomeSkeleton() {
   return (
     <div
-      className="animate-pulse"
+      className="min-h-0 flex-1 animate-pulse overflow-y-auto"
       style={{ paddingTop: HEADER_H }}
       aria-hidden="true"
     >

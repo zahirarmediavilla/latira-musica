@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import Link from "next/link";
 import { SearchIcon, SlidersIcon, CloseIcon, InfoIcon } from "./icons";
 import { Logo } from "./Logo";
 
@@ -10,7 +11,6 @@ interface HeaderProps {
   searchOpen: boolean;
   onToggleSearch: () => void; // abre/cierra el buscador (el padre limpia la query al cerrar)
   onFilter: () => void;
-  onInfo: () => void;
   resultCount: number | null; // null cuando no se está buscando
   filterCount: number; // filtros activos (zonas + fecha + géneros)
 }
@@ -26,7 +26,6 @@ export function Header({
   searchOpen,
   onToggleSearch,
   onFilter,
-  onInfo,
   resultCount,
   filterCount,
 }: HeaderProps) {
@@ -77,16 +76,18 @@ export function Header({
           }}
         />
 
-        {/* Info (sustituye a la hamburguesa; abre la pantalla de información) */}
-        <button
-          type="button"
-          onClick={onInfo}
+        {/* Info: enlaza a /info. Al navegar desde aquí, la ruta interceptora
+            (@modal/(.)info) la abre como overlay deslizante sobre la home,
+            manteniendo /info en la barra de direcciones; una carga directa cae
+            en la página completa. Mismo patrón que la ficha de evento. */}
+        <Link
+          href="/info"
           aria-label="Información"
           className="absolute right-[116px] top-[43px] flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10"
           style={hideWhenSearching}
         >
           <InfoIcon />
-        </button>
+        </Link>
 
         {/* Filtros (misma interacción que hasta ahora) */}
         <button

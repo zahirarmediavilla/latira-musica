@@ -1,13 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon } from "./icons";
+import { ArrowRightIcon, CloseIcon } from "./icons";
 
-// Transparent top bar on the detail screen with a back arrow at the top-right.
-// Mirrors the About header: same top padding, and a spacer that reserves the
-// logo's height so the back arrow lines up with the About close icon.
-export function BackHeader() {
+// Transparent top bar shared by every full-screen overlay (the event detail and
+// the info screen). It carries the close control at the top-right and plays the
+// reverse slide-out before navigating back, so the overlay leaves the same way
+// it entered. `icon`/`label` switch between the detail's back arrow and the
+// info screen's ✕, mirroring the design of each surface.
+export function BackHeader({
+  icon = "back",
+  label = "Volver",
+}: {
+  icon?: "back" | "close";
+  label?: string;
+} = {}) {
   const router = useRouter();
+  const Icon = icon === "close" ? CloseIcon : ArrowRightIcon;
 
   // Play the reverse slide-out, then navigate back once it finishes.
   function handleClose() {
@@ -29,10 +38,10 @@ export function BackHeader() {
       <button
         type="button"
         onClick={handleClose}
-        aria-label="Volver"
+        aria-label={label}
         className="flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5"
       >
-        <ArrowRightIcon />
+        <Icon />
       </button>
     </div>
   );
