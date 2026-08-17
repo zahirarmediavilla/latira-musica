@@ -55,6 +55,20 @@ body {
   box-shadow: 0 0 80px rgba(0, 0, 0, 0.08);
 }
 
+/* Respeta "reducir movimiento" del sistema: anula transiciones/animaciones
+   (barra azul, tira de filtros, morphs del header, buscador, slide del detalle)
+   sin quitar el cambio de estado, solo su animación. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Momentum scrolling for the detail overlay on iOS WebKit (DuckDuckGo/Safari).
    The scroll layer lives here, separate from the animating .detail-overlay. */
 .detail-scroll {
