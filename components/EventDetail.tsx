@@ -2,16 +2,7 @@ import { formatMediumDate } from "@/lib/format";
 import type { LaEvent } from "@/lib/types";
 import { AnalyticsEvent } from "@/lib/analytics";
 import { BackHeader } from "./BackHeader";
-import { ExternalIcon } from "./icons";
-
-function youtubeEmbed(url: string): string | null {
-  // youtube-nocookie.com = modo de privacidad mejorada: YouTube no deja cookies
-  // de seguimiento hasta que la persona pulsa play. Coherente con privacy-first
-  // (sin banner de consentimiento). Ver también loading="lazy" en el iframe:
-  // la petición al reproductor no se hace hasta que el vídeo entra en pantalla.
-  const m = url.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{6,})/);
-  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : null;
-}
+import { SampleMedia } from "./SampleMedia";
 
 function hostOf(url: string): string {
   try {
@@ -110,26 +101,9 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           </p>
         )}
 
-        {samples.map((url) => {
-          const embed = youtubeEmbed(url);
-          return embed ? (
-            <div key={url} className="mt-6 aspect-video overflow-hidden bg-black">
-              <iframe src={embed} title="Vídeo" loading="lazy" allowFullScreen className="h-full w-full" />
-            </div>
-          ) : (
-            <a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-1 text-blue"
-              data-umami-event={AnalyticsEvent.clicVerVideoAudio}
-              data-umami-event-id={ev.id}
-            >
-              Ver vídeo / audio <ExternalIcon className="h-4 w-4" />
-            </a>
-          );
-        })}
+        {samples.map((url) => (
+          <SampleMedia key={url} url={url} eventId={ev.id} />
+        ))}
 
         {ev.eventUrl && sourceHost && (
           <>
