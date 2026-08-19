@@ -16,6 +16,17 @@ export function AboutContent() {
           todo lo que se mueve aquí, mucho más de lo que parece.
         </p>
         <p>
+          Si quieres saber más, contarnos algo o que incluyamos un evento en la
+          lista, escribe a{" "}
+          <a
+            href="mailto:hola@latira.org"
+            className="font-medium underline"
+            data-umami-event={AnalyticsEvent.clicContactoEmail}
+          >
+            hola@latira.org
+          </a>
+        </p>
+        <p>
           Detrás de cada concierto hay mucha gente. Quienes hacen la música y se
           suben a tocarla, que son los primeros a los que hay que dar las gracias.
           Están los bares, las salas, las promotoras y quienes se ponen a
@@ -31,17 +42,6 @@ export function AboutContent() {
           Esto es un proyecto sin ánimo de lucro y con la privacidad por delante.
           Los datos que se registran son anónimos y no se van a vender a nadie.
           Nunca.
-        </p>
-        <p>
-          Si quieres saber más, contarnos algo o que incluyamos un evento en la
-          lista, escribe a{" "}
-          <a
-            href="mailto:hola@latira.org"
-            className="font-medium underline"
-            data-umami-event={AnalyticsEvent.clicContactoEmail}
-          >
-            hola@latira.org
-          </a>
         </p>
       </div>
     </>
