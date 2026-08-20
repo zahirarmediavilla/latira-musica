@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { SearchIcon, SlidersIcon, CloseIcon, InfoIcon } from "./icons";
+import { SearchIcon, SlidersIcon, CloseIcon, InfoIcon, ClearCircleIcon } from "./icons";
 import { Logo } from "./Logo";
 
 interface HeaderProps {
@@ -121,8 +121,28 @@ export function Header({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="¿Qué buscas?"
             tabIndex={searchOpen ? 0 : -1}
-            className="w-full min-w-0 bg-transparent pr-4 text-base text-ink outline-none placeholder:text-muted"
+            className="w-full min-w-0 bg-transparent text-base text-ink outline-none placeholder:text-muted"
           />
+          {/* Borrado rápido: vacía el texto sin cerrar el buscador y devuelve el
+              foco al input. Solo aparece cuando hay algo escrito. */}
+          <button
+            type="button"
+            onClick={() => {
+              onQueryChange("");
+              inputRef.current?.focus();
+            }}
+            aria-label="Borrar búsqueda"
+            tabIndex={searchOpen && query ? 0 : -1}
+            className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink/10 text-ink hover:bg-ink/20"
+            style={{
+              opacity: query ? 1 : 0,
+              transform: query ? "scale(1)" : "scale(0.6)",
+              pointerEvents: query ? "auto" : "none",
+              transition: `opacity 160ms ease, transform 200ms ${SPRING}`,
+            }}
+          >
+            <ClearCircleIcon className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Lupa ↔ aspa (mismo botón, en la posición de la lupa) */}
