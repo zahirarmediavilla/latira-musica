@@ -151,22 +151,110 @@ function truncateForMeta(text: string, max = 160): string {
 }
 
 /**
- * Meta description for an event. Prefers the event's own curated description —
- * a unique, compelling snippet gives a better search-result CTR and avoids the
- * near-duplicate boilerplate that repeats across hundreds of pages. Falls back
- * to a data-built sentence (name/date/place) when there's no real description,
- * or it's too short to stand on its own as a snippet. Never leaves holes: the
- * place/date clauses are dropped when absent.
+ * Meta description for an event. A real description the event carries — from
+ * the source or hand-edited — wins, because it may hold a unique nugget (a
+ * tribute act, a tour name, "de Navidad") the template can't know. The only
+ * exception is a SHORT description whose every word is already in the event's
+ * own fields: there the composed line strictly improves it without losing
+ * anything. Truly empty fields always get the composed line.
  */
 export function eventDescription(ev: LaEvent): string {
   const own = ev.description?.replace(/\s+/g, " ").trim() ?? "";
+  // A standalone description (≥40 chars) always wins — never overwrite it.
   if (own.length >= 40) return truncateForMeta(own);
+  // A short source description is replaced ONLY when it carries nothing the
+  // composed line doesn't already say — so no unique detail is ever lost.
+  if (own && !compositeCoversDescription(own, ev)) return truncateForMeta(own);
+  // Empty, or short-and-fully-covered: build the line from structured fields.
+  return truncateForMeta(composeEventSnippet(ev));
+}
 
-  const place = eventPlaceLabel(ev);
+/** Split into lowercase, accent-free word tokens (for content comparison). */
+function contentTokens(s: string): string[] {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
+// Generic words that add no information beyond what the composed line already
+// conveys: filler nouns ("concierto", "directo"…) plus articles/prepositions.
+// A short description made ONLY of these — plus tokens already in the event's
+// own fields — is safe to replace; anything else may carry a real detail.
+const FILLER_TOKENS = new Set([
+  "concierto", "conciertos", "directo", "actuacion", "espectaculo", "musica",
+  "vivo", "evento", "gira",
+  "de", "del", "la", "el", "los", "las", "lo", "un", "una", "unos", "unas",
+  "y", "e", "o", "u", "en", "a", "al", "con", "por", "para", "sin", "the",
+]);
+
+/**
+ * True when every content-bearing word of `desc` already appears in the event's
+ * structured fields (name, line-up, genre, venue, town, date) or is generic
+ * filler — i.e. replacing `desc` with the composed line loses no information.
+ * When any word is novel, this returns false and the source description is kept.
+ */
+function compositeCoversDescription(desc: string, ev: LaEvent): boolean {
+  const known = new Set(
+    contentTokens(
+      [
+        ev.name,
+        ev.artists,
+        ev.genres.join(" "),
+        ev.venue?.name ?? "",
+        eventCity(ev),
+        ev.date ? formatMediumDate(ev.date) : "",
+      ].join(" "),
+    ),
+  );
+  const meaningful = contentTokens(desc).filter(
+    (t) => t.length > 1 && !FILLER_TOKENS.has(t),
+  );
+  return meaningful.every((t) => known.has(t));
+}
+
+/** Uppercase just the first letter, leaving the rest untouched (so canonical
+ *  casing like "DJ Set" or a lowercase "desde 12 €" both come out right). */
+function capitalizeFirst(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+/**
+ * Meta description built only from stored fields — no invented prose. Weaves in
+ * genre, act/line-up, venue, town, date and price so every snippet is distinct
+ * across the site (Google discounts near-duplicate meta descriptions). Facts
+ * are separated with " · ", the same divider the UI uses for places, so the
+ * result scans cleanly in a search result or a social preview instead of
+ * reading like a keyword dump. Every clause is dropped when its data is
+ * missing, so the sentence stays grammatical with or without genre/venue/price.
+ */
+function composeEventSnippet(ev: LaEvent): string {
+  const city = eventCity(ev);
+  const venue = ev.venue?.name || "";
   const date = ev.date ? formatMediumDate(ev.date) : "";
-  const when = date ? ` el ${date}` : "";
-  const where = place ? ` en ${place}` : "";
-  return `${ev.name} actúa${when}${where}. Consulta horarios, ubicación y toda la información del evento.`;
+
+  // Keyword-first lead: "Rock en Gijón" / "Concierto en Gijón" / "Concierto".
+  const kind = capitalizeFirst(ev.genres[0] || "Concierto");
+  const lead = city ? `${kind} en ${city}` : kind;
+
+  // The act, plus the line-up when it's a distinct list (festivals, bills).
+  const artists = ev.artists?.trim() ?? "";
+  const act = artists ? `${ev.name} con ${artists}` : ev.name;
+
+  // Venue and date as clean, scannable segments (town is already in the lead).
+  const where = venue ? ` · ${venue}` : "";
+  const when = date ? ` · ${date}` : "";
+
+  // Price hook only when we actually know it; matches the ficha's wording.
+  const price = ev.free
+    ? " Entrada gratis."
+    : ev.price?.trim()
+      ? ` ${capitalizeFirst(ev.price.trim())}.`
+      : "";
+
+  return `${lead}: ${act}${where}${when}.${price}`;
 }
 
 // ── Event URL slug ──────────────────────────────────────────────────────────
