@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import {
   HOME_DESCRIPTION,
@@ -132,6 +133,7 @@ export default function RootLayout({
             />
           </>
         )}
+        <Analytics />
       </body>
     </html>
   );
