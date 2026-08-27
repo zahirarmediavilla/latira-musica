@@ -68,11 +68,15 @@ const HEAD = `<meta charset="utf-8">
 <style>
 @font-face{font-family:"Vremena Grotesk";src:url("/Vremena%20Grotesk/Web%20Fonts/vremenagrotesk_bold_macroman/vremenagroteskbold-webfont.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 *{margin:0;box-sizing:border-box}
-body{min-height:100dvh;background:#ebebeb;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-header{background:#1a1a1a}
-.bar{height:118px;display:flex;align-items:center;padding:0 20px}
-.mark{font-family:"Vremena Grotesk",ui-sans-serif,system-ui,sans-serif;font-weight:700;font-size:40px;color:#fff;letter-spacing:-0.01em}
+/* Header estático (como en toda la app: h-dvh + overflow-hidden en el body); el
+   scroll ocurre SOLO en .scroll, por debajo del header. */
+body{height:100dvh;overflow:hidden;display:flex;flex-direction:column;background:#ebebeb;color:#1a1a1a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+header{background:#1a1a1a;flex-shrink:0}
+.bar{position:relative;height:118px}
+.logo{position:absolute;left:20px;top:0;display:inline-block;height:87.23px}
+.logo svg{height:100%;width:auto;display:block}
 .line{height:10px;background:#0076dd}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .content{max-width:480px;margin:0 auto}
 .hero{text-align:center;padding:120px 32px 0}
 .hero h1{font-family:"Vremena Grotesk",ui-sans-serif,system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.05}
@@ -96,8 +100,22 @@ header{background:#1a1a1a}
 const ARROW =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
+// Marca LaTira: copia EXACTA de los paths de components/Logo.tsx (un route
+// handler no puede importar TSX, igual que scripts/generate-og.mjs). Si cambia
+// el logo en Logo.tsx, actualizar aquí. Incluye la tira roja #FF4203 sobre la "i".
+const LOGO_SVG =
+  '<svg viewBox="20 0 150.456 87.2263" role="img" aria-label="LaTira" xmlns="http://www.w3.org/2000/svg">' +
+  '<path d="M150.955 87.2263C145.255 87.2263 141.355 83.8063 141.355 78.8263C141.355 73.1863 146.335 69.2863 155.095 68.5063L159.775 68.0863V67.2463C159.775 65.0863 158.395 63.6463 156.355 63.6463C154.315 63.6463 152.875 65.0863 152.755 67.1863L142.255 66.9463C142.495 60.1063 148.555 55.1263 156.655 55.1263C164.635 55.1263 170.455 60.4063 170.455 67.5463V77.0263C170.455 80.2063 170.635 84.1663 171.055 86.6263H160.555C160.315 85.3663 160.195 83.9863 160.195 83.0263C158.395 85.4263 155.035 87.2263 150.955 87.2263ZM154.915 79.9063C157.615 79.9063 159.895 77.5663 159.895 74.4463V74.2063L155.935 74.6263C153.775 74.8663 152.155 75.7663 152.155 77.5663C152.155 79.0063 153.235 79.9063 154.915 79.9063Z" fill="#FFFDFD" />' +
+  '<path d="M119.138 86.6263V56.0263H129.938L129.638 62.9263C131.138 56.6263 135.878 54.8263 140.738 56.0263V66.8263C135.938 65.9263 129.938 66.6463 129.938 74.0263V86.6263H119.138Z" fill="#FFFDFD" />' +
+  '<path d="M105.738 86.6263V56.0263H115.738V86.6263H105.738Z" fill="#FFFDFD" />' +
+  '<path d="M105.738 51.9961V0H115.738V51.9961H105.738Z" fill="#FF4203" />' +
+  '<path d="M102.029 86.5063C93.929 88.3063 85.8291 85.8463 85.8291 74.9263V65.0263H81.0291V56.0263H85.8291V48.2263H96.6291V56.0263H102.929V65.0263H96.6291V74.0263C96.6291 77.8063 99.1491 78.0463 102.029 77.5063V86.5063Z" fill="#FFFDFD" />' +
+  '<path d="M60.1884 87.2263C54.4884 87.2263 50.5884 83.8063 50.5884 78.8263C50.5884 73.1863 55.5684 69.2863 64.3284 68.5063L69.0084 68.0863V67.2463C69.0084 65.0863 67.6284 63.6463 65.5884 63.6463C63.5484 63.6463 62.1084 65.0863 61.9884 67.1863L51.4884 66.9463C51.7284 60.1063 57.7884 55.1263 65.8884 55.1263C73.8684 55.1263 79.6884 60.4063 79.6884 67.5463V77.0263C79.6884 80.2063 79.8684 84.1663 80.2884 86.6263H69.7884C69.5484 85.3663 69.4284 83.9863 69.4284 83.0263C67.6284 85.4263 64.2684 87.2263 60.1884 87.2263ZM64.1484 79.9063C66.8484 79.9063 69.1284 77.5663 69.1284 74.4463V74.2063L65.1684 74.6263C63.0084 74.8663 61.3884 75.7663 61.3884 77.5663C61.3884 79.0063 62.4684 79.9063 64.1484 79.9063Z" fill="#FFFDFD" />' +
+  '<path d="M20 86.6263V44.6263H31.4V77.2663H48.8V86.6263H20Z" fill="#FFFDFD" />' +
+  '</svg>';
+
 const HEADER =
-  '<header><div class="bar"><span class="mark">LaTira</span></div><div class="line"></div></header>';
+  `<header><div class="bar"><a class="logo" href="/" aria-label="LaTira, volver a la agenda">${LOGO_SVG}</a></div><div class="line"></div></header>`;
 
 function page(body: string): string {
   return `<!doctype html>
@@ -107,8 +125,10 @@ ${HEAD}
 </head>
 <body>
 ${HEADER}
+<div class="scroll">
 <div class="content">
 ${body}
+</div>
 </div>
 </body>
 </html>`;
