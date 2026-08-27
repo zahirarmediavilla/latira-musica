@@ -12,12 +12,7 @@ import {
 } from "@/lib/filtering";
 import { track, AnalyticsEvent } from "@/lib/analytics";
 import { dayNumber, monthAbbr } from "@/lib/format";
-import {
-  FILTER_ROW_H,
-  HEADER_H,
-  HEADER_WITH_FILTERS,
-  HEADER_WITH_SEARCH,
-} from "@/lib/layout";
+import { FILTER_ROW_H } from "@/lib/layout";
 import { Header, SPRING } from "./Header";
 import { EventList } from "./EventList";
 import { RemovableTag } from "./Chip";
@@ -109,10 +104,6 @@ export function HomeView({ events }: { events: LaEvent[] }) {
 
   return (
     <>
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-      >
       <Header
         query={query}
         onQueryChange={setQuery}
@@ -141,9 +132,8 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           intercambio) para que la altura anime, igual que la barra de búsqueda
           del Header. */}
       <div
-        className="sticky z-20 overflow-hidden bg-blue"
+        className="z-20 overflow-hidden bg-blue"
         style={{
-          top: HEADER_H,
           height: showFilters ? FILTER_ROW_H : 0,
           transition: `height 420ms ${SPRING}`,
         }}
@@ -182,6 +172,11 @@ export function HomeView({ events }: { events: LaEvent[] }) {
         </div>
       </div>
 
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
       {searchOpen && !searching ? (
         // Buscador desplegado y vacío: apoyo en lugar del listado (mismo estilo
         // que No-resultados).
@@ -209,16 +204,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           )}
         </div>
       ) : (
-        <EventList
-          groups={groups}
-          dateTop={
-            searching
-              ? HEADER_WITH_SEARCH
-              : showFilters
-                ? HEADER_WITH_FILTERS
-                : HEADER_H
-          }
-        />
+        <EventList groups={groups} dateTop={0} />
       )}
       </div>
 
