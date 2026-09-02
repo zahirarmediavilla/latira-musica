@@ -50,8 +50,17 @@ function fixCaps(s: string): string {
 // NB: the live `eventos` table has no `free` column — it is derived from price.
 const SELECT =
   "id, name, date, start_at, artists, genres, price, ticket_url, " +
-  "event_url, location, description, sample_url, created_at, " +
+  "event_url, location, description, sample_url, notes, created_at, " +
   "recintos ( id, nombre, direccion, maps_url, municipio, localidad )";
+
+// `notes` is an internal review field that can hold several sentences joined by
+// ". " (apertura de puertas, genre-inference flags…). We surface ONLY the doors
+// time from it, never the raw field. Canonical shape written by the scraper is
+// "Apertura de puertas: HH:MM h" (agenda-scraper/supabase_client.py).
+function parseDoors(notes: string): string {
+  const m = notes.match(/apertura de puertas:\s*(\d{1,2}):(\d{2})/i);
+  return m ? `${m[1].padStart(2, "0")}:${m[2]}` : "";
+}
 
 interface VenueRow {
   id: number;
@@ -75,6 +84,7 @@ interface EventRow {
   location: string | null;
   description: string | null;
   sample_url: string | null;
+  notes: string | null;
   created_at: string | null;
   // Supabase returns a to-one embedded relation as an object (or null).
   recintos: VenueRow | VenueRow[] | null;
@@ -103,6 +113,7 @@ function toEvent(r: EventRow): LaEvent {
     name,
     date: str(r.date),
     hour: formatHour(r.start_at),
+    doorsTime: parseDoors(str(r.notes)),
     // Hide the artists line when it just duplicates the event name.
     artists: artists.trim().toLowerCase() === name.trim().toLowerCase() ? "" : artists,
     genres: arr(r.genres),

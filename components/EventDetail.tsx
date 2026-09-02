@@ -93,12 +93,26 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
           </p>
         )}
 
-        <hr className="my-6 border-[#b8b8b8]" />
+        {/* Everything below the divider is optional. Only draw the rule when
+            there's actually something under it (description, apertura de puertas
+            or media) — a poor event ends cleanly at price, with no orphan line. */}
+        {(ev.description || ev.doorsTime || samples.length > 0) && (
+          <hr className="my-6 border-[#b8b8b8]" />
+        )}
 
-        {ev.description && (
-          <p className="whitespace-pre-line break-words py-6 text-[16px] leading-relaxed text-muted">
-            {ev.description}
-          </p>
+        {(ev.description || ev.doorsTime) && (
+          <div className="py-6 text-[16px] leading-relaxed text-muted">
+            {ev.description && (
+              <p className="whitespace-pre-line break-words">{ev.description}</p>
+            )}
+            {/* Apertura de puertas: last line of the text, plain and readable —
+                the datum lives in `notes`, invisible until now. */}
+            {ev.doorsTime && (
+              <p className={ev.description ? "mt-4" : ""}>
+                Apertura de puertas: {ev.doorsTime}.
+              </p>
+            )}
+          </div>
         )}
 
         {samples.map((url) => (

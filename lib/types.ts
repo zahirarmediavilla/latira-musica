@@ -14,6 +14,7 @@ export interface LaEvent {
   name: string;
   date: string; // YYYY-MM-DD
   hour: string; // "HH:MM", or "" when unknown
+  doorsTime: string; // apertura de puertas "HH:MM", or "" when unknown
   artists: string; // raw text (comma/newline separated)
   genres: string[];
   price: string;

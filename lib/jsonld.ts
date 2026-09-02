@@ -109,6 +109,9 @@ export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
     "@type": "MusicEvent",
     name: ev.name,
     startDate: startDate(ev.date, ev.hour),
+    // Apertura de puertas, when known (parsed from `notes` in lib/events.ts):
+    // schema.org/doorTime, same date + Madrid offset as startDate.
+    ...(ev.doorsTime ? { doorTime: startDate(ev.date, ev.doorsTime) } : {}),
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     performer: buildPerformers(ev),
