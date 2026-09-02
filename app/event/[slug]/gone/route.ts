@@ -1,7 +1,8 @@
 import { getEventById, getEvents } from "@/lib/events";
-import { eventIdFromSlug, eventPath, eventCity } from "@/lib/seo";
+import { eventIdFromSlug, eventPath, eventCity, siteUrl } from "@/lib/seo";
 import { zoneForEvent } from "@/lib/zones";
 import { formatMediumDate } from "@/lib/format";
+import { AnalyticsEvent } from "@/lib/analytics";
 import type { LaEvent } from "@/lib/types";
 
 // The "ya pasó" page for a PAST event. `proxy.ts` detects a past dated slug (from
@@ -59,6 +60,40 @@ function esc(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// ── Analytics (Umami) ────────────────────────────────────────────────────────
+// La 410 es HTML plano fuera del árbol de React, así que el <Script> de Umami del
+// layout NO llega aquí: hay que replicarlo a mano para poder medir esta página.
+// Se copia EXACTO el montaje del layout: gating por env (en local/preview, sin
+// variables, no se inyecta nada y la 410 queda como antes), auto-exclusión por
+// `?notrack`/localStorage ANTES de cargar el tracker, y `data-domains` acotando a
+// producción. El aterrizaje se emite como evento nombrado (`ver-evento-pasado`)
+// porque la URL de la 410 es un `/event/<slug>` y en el panel no se distinguiría
+// de una ficha viva; los clics de rescate van declarativos (`data-umami-event`)
+// en cada enlace. Si cambia el montaje de Umami en layout.tsx, revisar aquí.
+
+/** Script de auto-exclusión, va en el <head> ANTES del tracker (como en layout). */
+function analyticsHead(): string {
+  if (!process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID) return "";
+  return `<script>try{var p=new URLSearchParams(location.search);if(p.has('notrack')){localStorage.setItem('umami.disabled','1')}else if(p.has('track')){localStorage.removeItem('umami.disabled')}}catch(e){}</script>`;
+}
+
+/** Tracker de Umami + evento de aterrizaje, al final del <body>. */
+function analyticsBody(): string {
+  const id = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+  const src = process.env.NEXT_PUBLIC_UMAMI_SRC;
+  if (!id || !src) return "";
+  const base = siteUrl();
+  const domains = base ? new URL(base).host : undefined;
+  const domainsAttr = domains ? ` data-domains="${esc(domains)}"` : "";
+  // `defer` para no bloquear el pintado; el evento de aterrizaje espera (poll
+  // acotado, 5s máx) a que el tracker exista. `umami.track` ya respeta por sí
+  // mismo la marca de auto-exclusión, así que no hace falta comprobarla aquí.
+  return (
+    `<script defer src="${esc(src)}" data-website-id="${esc(id)}"${domainsAttr}></script>` +
+    `<script>(function(){var n=0;function f(){if(window.umami&&window.umami.track){window.umami.track('${AnalyticsEvent.verEventoPasado}')}else if(n++<50){setTimeout(f,100)}}f()})();</script>`
+  );
 }
 
 const HEAD = `<meta charset="utf-8">
@@ -122,6 +157,7 @@ function page(body: string): string {
 <html lang="es">
 <head>
 ${HEAD}
+${analyticsHead()}
 </head>
 <body>
 ${HEADER}
@@ -130,6 +166,7 @@ ${HEADER}
 ${body}
 </div>
 </div>
+${analyticsBody()}
 </body>
 </html>`;
 }
@@ -147,7 +184,7 @@ function rowHtml(e: LaEvent): string {
     (e.hour && priceLabel ? " · " : "") +
     (priceLabel ? esc(priceLabel) : "");
   return (
-    `<a class="row" href="${esc(eventPath(e))}">` +
+    `<a class="row" href="${esc(eventPath(e))}" data-umami-event="${AnalyticsEvent.clicEventoPasadoProximo}" data-umami-event-destino="${esc(String(e.id))}">` +
     `<h3>${esc(e.name)}</h3>` +
     (e.artists ? `<p class="a">${esc(e.artists)}</p>` : "") +
     (place ? `<p class="m">${place}</p>` : "") +
@@ -169,7 +206,7 @@ function richGonePage(ev: LaEvent, upcoming: LaEvent[]): string {
     `<div class="hero${hasList ? "" : " only"}">` +
     `<h1>Este concierto ya pasó</h1>` +
     `<p class="sub">${sub}</p>` +
-    `<a class="btn" href="/">Ver toda la agenda ${ARROW}</a>` +
+    `<a class="btn" href="/" data-umami-event="${AnalyticsEvent.clicEventoPasadoHome}">Ver toda la agenda ${ARROW}</a>` +
     `</div>`;
 
   const list = hasList
@@ -184,7 +221,7 @@ function simpleGonePage(): string {
   return page(
     `<div class="hero only">` +
       `<h1>Este evento ya ha pasado</h1>` +
-      `<a class="btn" href="/">Volver a home ${ARROW}</a>` +
+      `<a class="btn" href="/" data-umami-event="${AnalyticsEvent.clicEventoPasadoHome}">Volver a home ${ARROW}</a>` +
       `</div>`,
   );
 }

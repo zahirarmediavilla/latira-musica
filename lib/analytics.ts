@@ -35,6 +35,13 @@ export const AnalyticsEvent = {
   clicContactoEmail: "clic-contacto-email",
   paginaNoEncontrada: "pagina-no-encontrada",
   errorApp: "error-app",
+  // Página 410 "este concierto ya pasó" (evento con fecha pasada al que se llega
+  // por un resultado viejo de Google). `verEventoPasado` = aterrizaje en la 410;
+  // los dos `clic…` = rescate (pincha un evento próximo de la zona / vuelve a la
+  // home). El ratio clic/aterrizaje mide si la 410 recupera a esa visita.
+  verEventoPasado: "ver-evento-pasado",
+  clicEventoPasadoProximo: "clic-evento-pasado-proximo",
+  clicEventoPasadoHome: "clic-evento-pasado-home",
 } as const;
 
 export type AnalyticsEventName =
