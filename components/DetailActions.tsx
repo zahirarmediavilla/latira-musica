@@ -9,6 +9,26 @@ export interface DetailActionData {
   ticketUrl: string;
 }
 
+// Adds utm_source=latira.org to the outbound ticket URL so the ticket shop can
+// attribute the visit to LaTira. Applied ONLY to the clickable button href, not
+// to the JSON-LD offers.url (which Google reads) — that one stays clean.
+// - Inserts the param into the query, so it lands before any #fragment and joins
+//   an existing query with & (new URL handles both).
+// - Never overwrites a utm_source the shop URL already carries.
+// - Returns the URL untouched if it is empty or not absolute.
+function withReferrer(url: string): string {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (!u.searchParams.has("utm_source")) {
+      u.searchParams.set("utm_source", "latira.org");
+    }
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 // Action bar at the bottom of the detail. It is a NORMAL flex child below the
 // scroll area (not position:fixed), so it can never overlap the content — the
 // last item ("Visto en") is always fully scrollable above it on every device.
@@ -78,7 +98,7 @@ export function DetailActions({ data }: { data: DetailActionData }) {
 
       {hasTicket ? (
         <PrimaryButton
-          href={data.ticketUrl}
+          href={withReferrer(data.ticketUrl)}
           external
           onClick={() =>
             track(AnalyticsEvent.clicComprarEntrada, {

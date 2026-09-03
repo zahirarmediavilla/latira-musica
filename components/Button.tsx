@@ -35,7 +35,15 @@ export function PrimaryButton({
         href={href}
         onClick={onClick}
         className={PRIMARY}
-        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        {...(external
+          ? // `external` is used only for the outbound "Comprar entradas" link,
+            // which points to a third-party ticket shop. `sponsored nofollow`
+            // tells Google it is a commercial link, not an editorial vote.
+            {
+              target: "_blank",
+              rel: "sponsored nofollow noopener noreferrer",
+            }
+          : {})}
       >
         {content}
       </a>
