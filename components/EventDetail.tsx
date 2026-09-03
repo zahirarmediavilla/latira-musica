@@ -120,7 +120,11 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
         ))}
 
         {ev.eventUrl && sourceHost && (
-          <>
+          // `data-nosnippet` keeps this source attribution visible to readers
+          // but out of Google's result snippet: otherwise Google appends
+          // "Visto en <fuente>" to the snippet, spending characters and pointing
+          // the searcher at the original source (which often outranks us).
+          <div data-nosnippet>
             <hr className="my-6 border-[#b8b8b8]" />
             <a
               href={ev.eventUrl}
@@ -133,7 +137,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
             >
               Visto en <span className="underline">{sourceHost}</span>
             </a>
-          </>
+          </div>
         )}
       </article>
 

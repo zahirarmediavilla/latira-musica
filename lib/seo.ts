@@ -160,12 +160,15 @@ function truncateForMeta(text: string, max = 160): string {
  */
 export function eventDescription(ev: LaEvent): string {
   const own = ev.description?.replace(/\s+/g, " ").trim() ?? "";
-  // A standalone description (≥40 chars) always wins — never overwrite it.
-  if (own.length >= 40) return truncateForMeta(own);
-  // A short source description is replaced ONLY when it carries nothing the
-  // composed line doesn't already say — so no unique detail is ever lost.
+  // A source/hand-written description wins ONLY when it carries something the
+  // composed line can't (a tour name, a tribute act, "de Navidad"…). When every
+  // content word is already in the event's structured fields or is generic
+  // filler, the composed line strictly improves it — so a thin "Fulano trae su
+  // directo al recinto X" yields to a snippet with genre, date and price. No
+  // unique detail is ever lost, and this holds regardless of length: a padded
+  // 47-char line that says nothing new no longer beats the composed one.
   if (own && !compositeCoversDescription(own, ev)) return truncateForMeta(own);
-  // Empty, or short-and-fully-covered: build the line from structured fields.
+  // Empty, or fully covered by the structured fields: compose the line.
   return truncateForMeta(composeEventSnippet(ev));
 }
 
@@ -180,12 +183,23 @@ function contentTokens(s: string): string[] {
 }
 
 // Generic words that add no information beyond what the composed line already
-// conveys: filler nouns ("concierto", "directo"…) plus articles/prepositions.
-// A short description made ONLY of these — plus tokens already in the event's
-// own fields — is safe to replace; anything else may carry a real detail.
+// conveys: filler nouns ("concierto", "directo"…), connector verbs that just
+// announce a show ("trae", "presenta"…), pronouns, articles and prepositions.
+// A description made ONLY of these — plus tokens already in the event's own
+// fields — is safe to replace; a single real noun/adjective (a tour name, a
+// disc, a nuance) keeps it, so nothing informative is ever lost.
 const FILLER_TOKENS = new Set([
+  // Filler nouns (the kind of show, or the venue type already in `venue`).
   "concierto", "conciertos", "directo", "actuacion", "espectaculo", "musica",
-  "vivo", "evento", "gira",
+  "vivo", "evento", "gira", "cita", "show", "bolo", "banda", "grupo",
+  "escenario", "sala", "recinto",
+  // Connector verbs that only announce the gig, never add a fact.
+  "trae", "traen", "presenta", "presentan", "llega", "llegan", "vuelve",
+  "vuelven", "ofrece", "ofrecen", "regresa", "regresan", "actua", "actuan",
+  "toca", "tocan", "visita", "recala",
+  // Pronouns / possessives.
+  "su", "sus", "se", "le", "les", "nos", "te", "me",
+  // Articles and prepositions.
   "de", "del", "la", "el", "los", "las", "lo", "un", "una", "unos", "unas",
   "y", "e", "o", "u", "en", "a", "al", "con", "por", "para", "sin", "the",
 ]);
