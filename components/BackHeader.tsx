@@ -18,18 +18,32 @@ export function BackHeader({
   const router = useRouter();
   const Icon = icon === "close" ? CloseIcon : ArrowRightIcon;
 
-  // Play the reverse slide-out, then navigate back once it finishes.
+  // Play the reverse slide-out, then dismiss once it finishes.
   function handleClose() {
     const container = document.querySelector<HTMLElement>(".detail-overlay");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!container || reduce) {
+
+    // Visita a página completa (sin overlay): back normal a de donde se venga.
+    if (!container) {
       router.back();
+      return;
+    }
+
+    // Overlay: cerrar SIEMPRE navegando a la home, no con `router.back()`. Un
+    // sample reproducible (YouTube/Spotify/SoundCloud/Bandcamp es un <iframe>)
+    // añade entradas al historial al pulsar play, así que `back()` retrocedería
+    // dentro del iframe y la ficha se quedaba abierta. La home es el slot
+    // `children` (ruta paralela) y sigue montada, por lo que volver a "/" la
+    // deja intacta (scroll incluido) y cierra el overlay de forma determinista.
+    const dismiss = () => router.push("/");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      dismiss();
       return;
     }
     if (container.classList.contains("animate-detail-out")) return; // already closing
     container.classList.remove("animate-detail-in");
     container.classList.add("animate-detail-out");
-    window.setTimeout(() => router.back(), 280);
+    window.setTimeout(dismiss, 280);
   }
 
   return (
