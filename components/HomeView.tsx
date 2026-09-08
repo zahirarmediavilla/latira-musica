@@ -65,6 +65,30 @@ export function HomeView({ events }: { events: LaEvent[] }) {
     persistedFilters = filters;
   }, [filters]);
 
+  // Al volver a la home desde una ficha abierta en directo (deep link/Google),
+  // `BackHeader` deja el id del evento en sessionStorage para dejarnos justo a su
+  // altura (la home se monta de cero, no conserva scroll como en el overlay).
+  // Se ejecuta solo al montar y se consume el id, así el flujo normal (overlay)
+  // no se ve afectado.
+  useEffect(() => {
+    let id: string | null = null;
+    try {
+      id = sessionStorage.getItem("latira:home-scroll-to");
+      if (id) sessionStorage.removeItem("latira:home-scroll-to");
+    } catch {
+      /* storage bloqueado: nos quedamos arriba */
+    }
+    if (!id) return;
+    const scroller = scrollRef.current;
+    const el = scroller?.querySelector<HTMLElement>(`#ev-${id}`);
+    if (!scroller || !el) return; // evento no listado (p. ej. ya pasado): arriba
+    const top =
+      el.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop;
+    scroller.scrollTo({ top: Math.max(0, top - 8), behavior: "auto" });
+  }, []);
+
   const searching = query.trim().length > 0;
   const filtered = useMemo(
     () => applyFilters(events, filters, query),

@@ -21,6 +21,7 @@ export function EventRow({
   const locationLabel = event.venue?.localidad || event.location;
   return (
     <Link
+      id={`ev-${event.id}`}
       href={eventPath(event)}
       className={
         "block pb-6 pr-5 " +

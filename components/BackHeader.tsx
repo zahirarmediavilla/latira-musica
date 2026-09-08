@@ -22,9 +22,22 @@ export function BackHeader({
   function handleClose() {
     const container = document.querySelector<HTMLElement>(".detail-overlay");
 
-    // Visita a página completa (sin overlay): back normal a de donde se venga.
+    // Visita a página completa (sin overlay: deep link, Google, enlace
+    // compartido). Cerramos SIEMPRE hacia la home de latira —nunca `back()`, que
+    // en una carga directa echaría fuera a Google (o no haría nada)— y la
+    // dejamos posicionada en el evento del que se venía: guardamos su id (los
+    // dígitos finales del path /event/<slug>) para que la home, al montarse,
+    // haga scroll hasta su fila. La info (/info) no lleva id → home arriba.
     if (!container) {
-      router.back();
+      const id = window.location.pathname.match(/(\d+)$/)?.[1];
+      if (id) {
+        try {
+          sessionStorage.setItem("latira:home-scroll-to", id);
+        } catch {
+          /* modo incógnito / storage bloqueado: la home abre arriba */
+        }
+      }
+      router.push("/");
       return;
     }
 
