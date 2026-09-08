@@ -147,6 +147,7 @@ export function HomeView({ events }: { events: LaEvent[] }) {
           setFilterOpen(true);
           track(AnalyticsEvent.abrirFiltros);
         }}
+        onLogoClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
         resultCount={searching ? filtered.length : null}
         filterCount={countActive(filters)}
       />

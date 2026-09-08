@@ -11,6 +11,7 @@ interface HeaderProps {
   searchOpen: boolean;
   onToggleSearch: () => void; // abre/cierra el buscador (el padre limpia la query al cerrar)
   onFilter: () => void;
+  onLogoClick: () => void; // click en la marca: lleva el listado arriba
   resultCount: number | null; // null cuando no se está buscando
   filterCount: number; // filtros activos (zonas + fecha + géneros)
 }
@@ -26,6 +27,7 @@ export function Header({
   searchOpen,
   onToggleSearch,
   onFilter,
+  onLogoClick,
   resultCount,
   filterCount,
 }: HeaderProps) {
@@ -66,15 +68,20 @@ export function Header({
             (top:0). Paths del SVG de diseño; el palo de la "i" (rojo + blanco) se
             estrecha a 10 px para igualar el grosor de la franja amarilla de la
             fecha y la barra azul del header. */}
-        <Logo
-          className="absolute left-5 top-0 h-[87.23px] w-auto"
+        <button
+          type="button"
+          onClick={onLogoClick}
+          aria-label="Ir al principio"
+          className="absolute left-5 top-0 block cursor-pointer"
           style={{
             opacity: searchOpen ? 0 : 1,
             transform: searchOpen ? "translateX(-8px)" : "none",
             pointerEvents: searchOpen ? "none" : "auto",
             transition: `opacity 200ms ease, transform 300ms ${EASE}`,
           }}
-        />
+        >
+          <Logo className="h-[87.23px] w-auto" />
+        </button>
 
         {/* Info: enlaza a /info. Al navegar desde aquí, la ruta interceptora
             (@modal/(.)info) la abre como overlay deslizante sobre la home,
