@@ -1,6 +1,7 @@
 import { AnalyticsEvent } from "@/lib/analytics";
 import { resolveSampleMedia } from "@/lib/sample-media";
 import { ExternalIcon } from "./icons";
+import { SampleFrameTracker } from "./SampleFrameTracker";
 
 // Una URL de `sample_url`, resuelta al mejor formato de vista previa. Componente
 // de servidor asíncrono (leer los metadatos de la fuente requiere fetch): se
@@ -10,7 +11,7 @@ export async function SampleMedia({ url, eventId }: { url: string; eventId: stri
 
   if (media.kind === "youtube") {
     return (
-      <div className="mt-6 aspect-video overflow-hidden bg-black">
+      <SampleFrameTracker eventId={eventId} className="mt-6 aspect-video overflow-hidden bg-black">
         <iframe
           src={media.src}
           title="Vídeo"
@@ -18,13 +19,17 @@ export async function SampleMedia({ url, eventId }: { url: string; eventId: stri
           allowFullScreen
           className="h-full w-full"
         />
-      </div>
+      </SampleFrameTracker>
     );
   }
 
   if (media.kind === "embed") {
     return (
-      <div className="mt-6 overflow-hidden rounded-2xl bg-ink/[0.05]" style={{ height: media.height }}>
+      <SampleFrameTracker
+        eventId={eventId}
+        className="mt-6 overflow-hidden rounded-2xl bg-ink/[0.05]"
+        style={{ height: media.height }}
+      >
         <iframe
           src={media.src}
           title={media.title}
@@ -32,7 +37,7 @@ export async function SampleMedia({ url, eventId }: { url: string; eventId: stri
           allow="autoplay; encrypted-media; fullscreen"
           className="h-full w-full border-0"
         />
-      </div>
+      </SampleFrameTracker>
     );
   }
 
