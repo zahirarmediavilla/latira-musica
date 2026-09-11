@@ -48,7 +48,7 @@ export function EventDetail({ event: ev }: { event: LaEvent }) {
         </h1>
 
         {ev.artists && (
-          <p className="mt-3 text-[20px] font-bold leading-snug text-ink">{ev.artists}</p>
+          <h2 className="mt-3 text-[20px] font-bold leading-snug text-ink">{ev.artists}</h2>
         )}
 
         <p className="mt-4 text-[18px] font-bold capitalize text-muted">
