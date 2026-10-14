@@ -98,7 +98,6 @@ export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
   const offers = buildOffers(ev);
   const location = buildLocation(ev);
   const sameAs = referenceLinks(ev);
-  const organizer = buildOrganizationJsonLd({ asReference: true });
   // Google's Event rich result treats `image` as required; the site has no
   // per-event artwork, so we fall back to the generic brand card. Better to be
   // eligible with the brand image than ineligible with none.
@@ -115,7 +114,6 @@ export function buildEventJsonLd(ev: LaEvent): JsonLdObject {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     performer: buildPerformers(ev),
-    organizer,
     ...(image ? { image: [image] } : {}),
     ...(ev.description ? { description: ev.description } : {}),
     ...(location ? { location } : {}),
@@ -144,13 +142,11 @@ export function buildBreadcrumbJsonLd(ev: LaEvent): JsonLdObject | null {
 
 /** Schema.org Organization for LaTira. Returns the bare object, including only
  *  the fields that exist (url/logo depend on a configured base URL). */
-export function buildOrganizationJsonLd(opts?: {
-  asReference?: boolean;
-}): JsonLdObject {
+export function buildOrganizationJsonLd(): JsonLdObject {
   const url = absoluteUrl("/");
   const logo = absoluteUrl("/LaTira-logo.svg");
   return {
-    ...(opts?.asReference ? {} : { "@context": "https://schema.org" }),
+    "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
     ...(url ? { url } : {}),
